@@ -1,4 +1,5 @@
 $(document).ready(function(){
+  //Initial older API, still might need to be used
 	/*$.ajax({
 	    url: "https://heisenbug-russian-league-live-scores-v1.p.mashape.com/api/russianleague/table",
 	    type: 'GET',
@@ -10,51 +11,31 @@ $(document).ready(function(){
 	    xhr.setRequestHeader("X-Mashape-Authorization", "dPqlI7wfAumsh5TvjJFC8weyaCSip1lseJUjsn1WyHgjTiEBwZ");
 	    }
 	});*/
-
-	var matches;
 	var newRow;
 	var teamRow;
-	function createNewRow(){
-		newRow= $("<div>");
-		newRow.addClass("row");
-		$(".matchesDiv").append(newRow);
+
+  //function prints each fixture into a row of the table
+	function printMatches(matchArray){
+    $("#matchDay").html("Matchday: " + matchArray[0].matchday);
+
+    for(var i =0; i < matchArray.length; i++){
+		addMatch(matchArray[i]);
+    $("fixtures").append(newRow);
+    }
 		return;
 	}
 
-	function printMatches(matchArray){
-			var counter =0;
-			createNewRow();
-
-			for(var i =0; i < matchArray.length; i++){
-				if(counter < 3){
-					addMatch(matches[i]);
-					counter ++;
-				}
-				else{
-					createNewRow();
-					addMatch(matches[i]);
-					counter = 1;
-					}
-			}
-			return;
-		}
-
+    //print matches takes this input to creat each row
 		function addMatch(arrayInput){
-			var newMatch = $("<div>");
-			newRow.append(newMatch);
-
-			newMatch.addClass("col-md-4");
-			var homeTeam = $("<h3>");
-			homeTeam.html("Home Team: " + arrayInput.homeTeamName);
-			newMatch.append(homeTeam);
-
-			var awayTeam = $("<h3>");
-			awayTeam.html("Away Team: " + arrayInput.awayTeamName);
-			newMatch.append(awayTeam);
-
+			newRow = $("<tr>");
+      var newFixture = $("<td>");
+      newFixture.html(arrayInput.homeTeamName + " vs " + arrayInput.awayTeamName);
+			newRow.append(newFixture);
+      $("#fixtures").append(newRow);
 			return;
 		}
 
+    //creates league table
 		function createStandings(tableResponse){
 			$("#leagueName").html(tableResponse.leagueCaption);
 
@@ -73,13 +54,14 @@ $(document).ready(function(){
 				return;
 		}
 
+    //Adds team to function that generates the table
 		function teamAdd(team, addition){
 			var rowAddition = $("<td>");
 			rowAddition.html(team[addition]);
 			teamRow.append(rowAddition);
 			return;
 		}
-
+    //W-D-L takes special function
 		function gamesAdd(team, wins, draws, losses){
 			var rowAddition = $("<td>");
 			rowAddition.html(team[wins] + "-" + team[draws] + "-" + team[losses]);
@@ -93,8 +75,8 @@ $(document).ready(function(){
 	  dataType: 'json',
 	  type: 'GET',
 	}).done(function(response) {
-		matches = response.fixtures;
-	  printMatches(matches);
+    console.log(response);
+	  printMatches(response.fixtures);
 	});
 
 	$.ajax({
@@ -103,6 +85,7 @@ $(document).ready(function(){
 	  dataType: 'json',
 	  type: 'GET',
 	}).done(function(response) {
+    console.log(response);
 		createStandings(response);
 	});
 
