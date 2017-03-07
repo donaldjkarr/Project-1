@@ -1,23 +1,13 @@
 $(document).ready(function(){
-  //Initial older API, still might need to be used
-	/*$.ajax({
-	    url: "https://heisenbug-russian-league-live-scores-v1.p.mashape.com/api/russianleague/table",
-	    type: 'GET',
-	    data: {},
-	    dataType: 'json',
-	    success: function(data) { console.log(data); },
-	    error: function(err) { alert(err); },
-	    beforeSend: function(xhr) {
-	    xhr.setRequestHeader("X-Mashape-Authorization", "dPqlI7wfAumsh5TvjJFC8weyaCSip1lseJUjsn1WyHgjTiEBwZ");
-	    }
-	});*/
 	var newRow;
 	var teamRow;
 
-  //function prints each fixture into a row of the table
+  //1/2 functions that prints each fixture into a table
 	function printMatches(matchArray){
+    //takes matchDay from the JSOn object and prints it into header
     $("#matchDay").html("Matchday: " + matchArray[0].matchday);
 
+    //for each fixture prints into a table row before appending new row
     for(var i =0; i < matchArray.length; i++){
 		addMatch(matchArray[i]);
     $("fixtures").append(newRow);
@@ -25,7 +15,7 @@ $(document).ready(function(){
 		return;
 	}
 
-    //print matches takes this input to creat each row
+    //2/2 functions that print fixtures
 		function addMatch(arrayInput){
 			newRow = $("<tr>");
       var newFixture = $("<td>");
@@ -35,17 +25,19 @@ $(document).ready(function(){
 			return;
 		}
 
-    //creates league table
+    //1/3 functions used to create league standings table
 		function createStandings(tableResponse){
-			$("#leagueName").html(tableResponse.leagueCaption);
+      //takes legue name from JSON object and prints it in table header
+			$("#leagueName").html(tableResponse.leagueCaption + "<br>Updated Through Matchday: " + tableResponse.matchday);
 
+      //for each team in the JSON object, for loop adds each element("wins, team name, etc) to a table row and appends the row to the table")
 				for(var i=0; i < tableResponse.standing.length; i ++){
 					teamRow = $("<tr>");
 
 					teamAdd(tableResponse.standing[i], "position");
 					teamAdd(tableResponse.standing[i], "teamName");
 					teamAdd(tableResponse.standing[i], "playedGames");
-					gamesAdd(tableResponse.standing[i], "wins", "draws", "losses");
+					AddWDL(tableResponse.standing[i], "wins", "draws", "losses");
 					teamAdd(tableResponse.standing[i], "goalDifference");
 					teamAdd(tableResponse.standing[i], "points");
 
@@ -54,24 +46,28 @@ $(document).ready(function(){
 				return;
 		}
 
-    //Adds team to function that generates the table
+    //2/3 functions used to create league standings table
+    //Adds a particular element to the table row. (first parameter takes the specific team, second is addition to the table)
 		function teamAdd(team, addition){
 			var rowAddition = $("<td>");
 			rowAddition.html(team[addition]);
 			teamRow.append(rowAddition);
 			return;
 		}
-    //W-D-L takes special function
-		function gamesAdd(team, wins, draws, losses){
+
+    //3/3 function used to create league standings table
+    //essentially the same as teamAdd(), has more parameters allowing all three parts of the object to be added to a single column of the table
+		function AddWDL(team, wins, draws, losses){
 			var rowAddition = $("<td>");
 			rowAddition.html(team[wins] + "-" + team[draws] + "-" + team[losses]);
 			teamRow.append(rowAddition);
 			return;
 		}
 
+    //API call to obtain fixtures for a specified match day
 	$.ajax({
 	  headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-	  url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=27',
+	  url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
 	  dataType: 'json',
 	  type: 'GET',
 	}).done(function(response) {
@@ -79,6 +75,7 @@ $(document).ready(function(){
 	  printMatches(response.fixtures);
 	});
 
+  //API call to obtain the league table
 	$.ajax({
 	  headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
 	  url: 'http://api.football-data.org/v1/competitions/426/leagueTable',
@@ -89,14 +86,29 @@ $(document).ready(function(){
 		createStandings(response);
 	});
 
-	/*$.ajax({
-	  headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-	  url: 'http://api.football-data.org/v1/competitions/430/leagueTable',
-	  dataType: 'json',
-	  type: 'GET',
-	}).done(function(response) {
-	console.log(response);
-		createStandings(response);
-	});*/
+
+/*Competition # and corresponding league
+  2016/2017 season
+  426: Premier League
+  430: Bundesliga
+  434: French Ligue 1
+  436: La Liga
+  438: Italian Serie A
+  440: UEFA Champions League
+*/
+
+//Working example of initial older API, still might need to be used
+//limited to 50 calls per month
+/*$.ajax({
+    url: "https://heisenbug-russian-league-live-scores-v1.p.mashape.com/api/russianleague/table",
+    type: 'GET',
+    data: {},
+    dataType: 'json',
+    success: function(data) { console.log(data); },
+    error: function(err) { alert(err); },
+    beforeSend: function(xhr) {
+    xhr.setRequestHeader("X-Mashape-Authorization", "dPqlI7wfAumsh5TvjJFC8weyaCSip1lseJUjsn1WyHgjTiEBwZ");
+    }
+});*/
 
 });
