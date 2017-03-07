@@ -1,32 +1,37 @@
 $(document).ready(function(){
-	var newRow;
-	var teamRow;
 
-  //1/2 functions that prints each fixture into a table
-	function printMatches(matchArray){
-    //takes matchDay from the JSOn object and prints it into header
-    $("#matchDay").html("Matchday: " + matchArray[0].matchday);
+  //fixtureGen object contains all the functions used for generating the table of fixtures
+  var fixtureGen = {
+    matchRow: "",
 
-    //for each fixture prints into a table row before appending new row
-    for(var i =0; i < matchArray.length; i++){
-		addMatch(matchArray[i]);
-    $("fixtures").append(newRow);
-    }
-		return;
-	}
+    printMatches: function(matchArray){
+      //takes matchDay from the JSOn object and prints it into header
+      $("#matchDay").html("Matchday: " + matchArray[0].matchday);
+
+      //for each fixture prints into a table row before appending new row
+      for(var i =0; i < matchArray.length; i++){
+      fixtureGen.addMatch(matchArray[i]);
+      $("fixtures").append(matchRow);
+      }
+      return;
+    },
 
     //2/2 functions that print fixtures
-		function addMatch(arrayInput){
-			newRow = $("<tr>");
+    addMatch: function(arrayInput){
+      matchRow = $("<tr>");
       var newFixture = $("<td>");
       newFixture.html(arrayInput.homeTeamName + " vs " + arrayInput.awayTeamName);
-			newRow.append(newFixture);
-      $("#fixtures").append(newRow);
-			return;
-		}
+      matchRow.append(newFixture);
+      $("#fixtures").append(matchRow);
+      return;
+    }
+  }
 
-    //1/3 functions used to create league standings table
-		function createStandings(tableResponse){
+//tableGen object contains all the functions used to generate the league standings table
+  var tableGen = {
+    teamRow: "",
+
+    createStandings: function(tableResponse){
       //takes legue name from JSON object and prints it in table header
 			$("#leagueName").html(tableResponse.leagueCaption + "<br>Updated Through Matchday: " + tableResponse.matchday);
 
@@ -34,35 +39,37 @@ $(document).ready(function(){
 				for(var i=0; i < tableResponse.standing.length; i ++){
 					teamRow = $("<tr>");
 
-					teamAdd(tableResponse.standing[i], "position");
-					teamAdd(tableResponse.standing[i], "teamName");
-					teamAdd(tableResponse.standing[i], "playedGames");
-					AddWDL(tableResponse.standing[i], "wins", "draws", "losses");
-					teamAdd(tableResponse.standing[i], "goalDifference");
-					teamAdd(tableResponse.standing[i], "points");
+					tableGen.teamAdd(tableResponse.standing[i], "position");
+					tableGen.teamAdd(tableResponse.standing[i], "teamName");
+					tableGen.teamAdd(tableResponse.standing[i], "playedGames");
+					tableGen.AddWDL(tableResponse.standing[i], "wins", "draws", "losses");
+					tableGen.teamAdd(tableResponse.standing[i], "goalDifference");
+					tableGen.teamAdd(tableResponse.standing[i], "points");
 
 					 $("#teamInsert").append(teamRow);
 				}
 				return;
-		}
+		},
 
     //2/3 functions used to create league standings table
     //Adds a particular element to the table row. (first parameter takes the specific team, second is addition to the table)
-		function teamAdd(team, addition){
+		teamAdd: function(team, addition){
 			var rowAddition = $("<td>");
 			rowAddition.html(team[addition]);
 			teamRow.append(rowAddition);
 			return;
-		}
+		},
 
     //3/3 function used to create league standings table
     //essentially the same as teamAdd(), has more parameters allowing all three parts of the object to be added to a single column of the table
-		function AddWDL(team, wins, draws, losses){
+		AddWDL: function(team, wins, draws, losses){
 			var rowAddition = $("<td>");
 			rowAddition.html(team[wins] + "-" + team[draws] + "-" + team[losses]);
 			teamRow.append(rowAddition);
 			return;
 		}
+  }
+
 
     //API call to obtain fixtures for a specified match day
 	$.ajax({
@@ -72,7 +79,7 @@ $(document).ready(function(){
 	  type: 'GET',
 	}).done(function(response) {
     console.log(response);
-	  printMatches(response.fixtures);
+	  fixtureGen.printMatches(response.fixtures);
 	});
 
   //API call to obtain the league table
@@ -83,7 +90,7 @@ $(document).ready(function(){
 	  type: 'GET',
 	}).done(function(response) {
     console.log(response);
-		createStandings(response);
+		tableGen.createStandings(response);
 	});
 
 
