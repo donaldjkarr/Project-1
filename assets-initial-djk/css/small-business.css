@@ -16,6 +16,10 @@ body {
     padding: 0 15px;
 }
 
+.quote {
+    margin-top: 20px;
+}
+
 footer {
     padding: 30px 0;
 }
