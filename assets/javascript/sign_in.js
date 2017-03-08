@@ -8,58 +8,147 @@ $(document).ready(function(){
     messagingSenderId: "1033595008210"
   };
   firebase.initializeApp(config);
+  var database = firebase.database();
+
+//object contains all the functions needed to generate a panel
+var panelGen = {
+
+  //this function creates initial panel, panel heading, and panel body.
+  createPanel: function(panelTitle, bodyId, parentDiv){
+    var panel = $("<div>");
+    panel.addClass("panel panel-primary");
+
+    var panelHeading = $("<div>");
+    panelHeading.addClass("panel-heading");
+    panelHeading.html("<h3>" + panelTitle + "<h3>");
+    //panel heading is appended to panel
+    panel.append(panelHeading);
+
+    var panelBody = $("<div>");
+    panelBody.addClass("panel-body");
+    panelBody.attr("id", bodyId);
+    panel.append(panelBody);
+
+    parentDiv.append(panel);
+    return;
+  },
+
+  //creates blank form and attaches it to specified panel
+  createForm: function(parentPanel, formId){
+    var newForm = $("<form>");
+    newForm.attr("id", formId)
+    parentPanel.append(newForm);
+    return;
+},
+
+  //creates a form group and attaches it to specified form
+  formGroup: function(inputId, formText, parentForm){
+    var formGroup = $("<div>");
+    formGroup.addClass("form-group");
+
+    var formLabel = $("<label>");
+    formLabel.attr("for", inputId);
+    formLabel.html(formText);
+    formGroup.append(formLabel);
+
+    var userInput = $("<input>");
+    userInput.addClass("form-control");
+    userInput.attr("type", "text");
+    userInput.attr("id", inputId);
+    formGroup.append(userInput);
+
+    parentForm.append(formGroup);
+    return;
+  },
+
+  //creates a submit button and attaches it to specified form
+  createSubmitBtn: function(btnId, btnText, parentForm){
+    var btnSubmit =$("<button>");
+    btnSubmit.addClass("btn btn-primary");
+    btnSubmit.attr("id", btnId);
+    btnSubmit.attr("type", "submit");
+    btnSubmit.html(btnText);
+    //submit button is appended to form
+    parentForm.append(btnSubmit);
+    return;
+},
+
+  createTable: function(tableId, parentForm){
+    var newTable = $("<table>");
+    newTable.addClass("table table-striped table-condensed");
+    newTable.attr("id", tableId)
+    parentForm.append(newTable);
+    return;
+},
+
+  tableHeadInitial: function(headerId, parentTable){
+    var tableHead =$("<thead>");
+    var tableHeaderRow = $("<tr>");
+    tableHeaderRow.attr("id", headerId)
+    tableHead.append(tableHeaderRow);
+    parentTable.append(tableHead);
+    return;
+},
+
+  tableHeaders: function(headerText, tableHeaderId){
+    var tableHeader = $("<th>");
+    tableHeader.html(headerText);
+    tableHeaderId.append(tableHeader);
+    return;
+},
+
+  tableBody: function(bodyId, parentTable){
+    var tableBody = $("<tbody>");
+    tableBody.attr("id", bodyId);
+    return
+},
+
+  bodyAdd: function(info, parentBody){
+    var bodyAdd = $("<td>");
+    bodyAdd.html(info);
+    parentBody.append(bodyAdd);
+    return;
+},
+}
+
+  var userCount;
+  database.ref("variables/").on("value", function(snapshot) {
+      userCount = snapshot.val().userCount;
+  });
 
   $("#signInBtn").on("click", function(){
     //prevents default and empties div to replace with sign in form
     event.preventDefault();
     $("#signInArea").empty();
 
-    var panel = $("<div>");
-    panel.addClass("panel panel-primary");
+    panelGen.createPanel("Please Sign In", "signInPanel", $("#signInArea"));
+    panelGen.createForm($("#signInPanel"), "signInForm");
+    panelGen.formGroup("nameInput", "User Name", $("#signInForm"));
+    panelGen.createSubmitBtn("nameSubmit", "Submit Name", $("#signInForm"));
 
-    var panelHeading = $("<div>");
-    panelHeading.addClass("panel-heading");
-    panelHeading.html("<h3>Please Sign In<h3>");
-    //panel heading is appended to panel
-    panel.append(panelHeading);
-
-    var panelBody = $("<div>");
-    panelBody.addClass("panel-body");
-
-
-    var signInForm = $("<form>");
-
-      //these are all related to generating a form group and adding it to the form
-      var formGroup = $("<div>");
-      formGroup.addClass("form-group");
-
-      var formLabel = $("<label>");
-      formLabel.attr("for", "nameInput");
-      formLabel.text("User Name")
-      formGroup.append(formLabel);
-
-      var nameInput = $("<input>");
-      nameInput.addClass("form-control");
-      nameInput.attr("type", "text");
-      nameInput.attr("id", "nameInput");
-      formGroup.append(nameInput);
-
-    //form group is appended to form
-    signInForm.append(formGroup);
-
-    var nameSubmit =$("<button>");
-    nameSubmit.addClass("btn btn-primary");
-    nameSubmit.attr("id", "nameSubmit");
-    nameSubmit.attr("type", "submit");
-    nameSubmit.text("Submit Name");
-    //submit button is appended to form
-    signInForm.append(nameSubmit);
-
-    //form is appended to panel body
-    panelBody.append(signInForm);
-    //panel body is appended to form
-    panel.append(panelBody);
-    //the panel now complete with heading and a body that contains the form is appended to sign in area
-    $("#signInArea").append(panel);
   });
-})
+
+  $(document).on("click", "#nameSubmit", function(){
+    event.preventDefault();
+
+    userCount++
+    database.ref("variables/").set({
+        userCount: userCount
+      });
+
+    var newUser = {
+      userName: name,
+      uid: userCount
+    }
+
+    newUser.userName = $("#nameInput").val().trim();
+    //newUser.uid = userCount;
+    database.ref("users/").push(newUser);
+
+    $("#nameInput").val("");
+
+    $("#signInArea").empty();
+  });
+
+
+});
