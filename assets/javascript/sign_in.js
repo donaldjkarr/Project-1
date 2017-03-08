@@ -31,16 +31,17 @@ var panelGen = {
 
     parentDiv.append(panel);
     return;
-  },
+  }
+}
 
-  //creates blank form and attaches it to specified panel
+var formGen = {
+
   createForm: function(parentPanel, formId){
     var newForm = $("<form>");
     newForm.attr("id", formId)
     parentPanel.append(newForm);
     return;
-},
-
+  },
   //creates a form group and attaches it to specified form
   formGroup: function(inputId, formText, parentForm){
     var formGroup = $("<div>");
@@ -60,8 +61,7 @@ var panelGen = {
     parentForm.append(formGroup);
     return;
   },
-
-  //creates a submit button and attaches it to specified form
+//creates a submit button and attaches it to specified form
   createSubmitBtn: function(btnId, btnText, parentForm){
     var btnSubmit =$("<button>");
     btnSubmit.addClass("btn btn-primary");
@@ -71,7 +71,10 @@ var panelGen = {
     //submit button is appended to form
     parentForm.append(btnSubmit);
     return;
-},
+    }
+  }
+
+var tableGen ={
 
   createTable: function(tableId, parentForm){
     var newTable = $("<table>");
@@ -79,7 +82,7 @@ var panelGen = {
     newTable.attr("id", tableId)
     parentForm.append(newTable);
     return;
-},
+  },
 
   tableHeadInitial: function(headerId, parentTable){
     var tableHead =$("<thead>");
@@ -88,29 +91,28 @@ var panelGen = {
     tableHead.append(tableHeaderRow);
     parentTable.append(tableHead);
     return;
-},
+  },
 
   tableHeaders: function(headerText, tableHeaderId){
     var tableHeader = $("<th>");
     tableHeader.html(headerText);
     tableHeaderId.append(tableHeader);
     return;
-},
+  },
 
   tableBody: function(bodyId, parentTable){
     var tableBody = $("<tbody>");
     tableBody.attr("id", bodyId);
     return
-},
+  },
 
   bodyAdd: function(info, parentBody){
     var bodyAdd = $("<td>");
     bodyAdd.html(info);
     parentBody.append(bodyAdd);
     return;
-},
+  }
 }
-
   var userCount;
   database.ref("variables/").on("value", function(snapshot) {
       userCount = snapshot.val().userCount;
@@ -122,9 +124,9 @@ var panelGen = {
     $("#signInArea").empty();
 
     panelGen.createPanel("Please Sign In", "signInPanel", $("#signInArea"));
-    panelGen.createForm($("#signInPanel"), "signInForm");
-    panelGen.formGroup("nameInput", "User Name", $("#signInForm"));
-    panelGen.createSubmitBtn("nameSubmit", "Submit Name", $("#signInForm"));
+    formGen.createForm($("#signInPanel"), "signInForm");
+    formGen.formGroup("nameInput", "User Name", $("#signInForm"));
+    formGen.createSubmitBtn("nameSubmit", "Submit Name", $("#signInForm"));
 
   });
 
