@@ -1,9 +1,19 @@
 $(document).ready(function(){
 
+  var config = {
+      apiKey: "AIzaSyDsSl_sMP6qnwW8Wun2VkagkB5Xtv5B7A4",
+      authDomain: "project-1-60d84.firebaseapp.com",
+      databaseURL: "https://project-1-60d84.firebaseio.com",
+      storageBucket: "project-1-60d84.appspot.com",
+      messagingSenderId: "1033595008210"
+    };
+    firebase.initializeApp(config);
+
   //fixtureGen object contains all the functions used for generating the table of fixtures
   var fixtureGen = {
     matchRow: "",
 
+    //1/2 functions that print fixtures
     printMatches: function(matchArray){
       //takes matchDay from the JSOn object and prints it into header
       $("#matchDay").html("Matchday: " + matchArray[0].matchday);
@@ -30,7 +40,7 @@ $(document).ready(function(){
 //tableGen object contains all the functions used to generate the league standings table
   var tableGen = {
     teamRow: "",
-
+    //1/3 functions used to create league standings table
     createStandings: function(tableResponse){
       //takes legue name from JSON object and prints it in table header
 			$("#leagueName").html(tableResponse.leagueCaption + "<br>Updated Through Matchday: " + tableResponse.matchday);
@@ -74,7 +84,7 @@ $(document).ready(function(){
     //API call to obtain fixtures for a specified match day
 	$.ajax({
 	  headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-	  url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
+	  url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=27',
 	  dataType: 'json',
 	  type: 'GET',
 	}).done(function(response) {
