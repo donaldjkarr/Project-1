@@ -10,6 +10,7 @@ $(document).ready(function(){
   panelHeading.addClass("panel-heading")
   panelHeading.html("<h3>Please Sign In<h3>");
   panel.append(panelHeading);
+
   var panelBody = $("<div>");
   panelBody.addClass("panel-body");
 
@@ -38,6 +39,7 @@ $(document).ready(function(){
   signInForm.append(nameSubmit);
 
   panelBody.append(signInForm);
-  $("#signInArea").append(panelBody);
+  panel.append(panelBody);
+  $("#signInArea").append(panel);
   });
 })
