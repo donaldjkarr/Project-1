@@ -12,8 +12,6 @@ $(document).ready(function(){
 
 //object contains all the functions needed to generate a panel
 var panelGen = {
-
-  //this function creates initial panel, panel heading, and panel body.
   createPanel: function(panelTitle, bodyId, parentDiv){
     var panel = $("<div>");
     panel.addClass("panel panel-primary");
@@ -61,7 +59,6 @@ var formGen = {
     parentForm.append(formGroup);
     return;
   },
-//creates a submit button and attaches it to specified form
   createSubmitBtn: function(btnId, btnText, parentForm){
     var btnSubmit =$("<button>");
     btnSubmit.addClass("btn btn-primary");
@@ -76,11 +73,11 @@ var formGen = {
 
 var tableGen ={
 
-  createTable: function(tableId, parentForm){
+  createTable: function(tableId, parentPanel){
     var newTable = $("<table>");
     newTable.addClass("table table-striped table-condensed");
     newTable.attr("id", tableId)
-    parentForm.append(newTable);
+    parentPanel.append(newTable);
     return;
   },
 
@@ -103,16 +100,25 @@ var tableGen ={
   tableBody: function(bodyId, parentTable){
     var tableBody = $("<tbody>");
     tableBody.attr("id", bodyId);
+    parentTable.append(tableBody);
     return
   },
 
-  bodyAdd: function(info, parentBody){
-    var bodyAdd = $("<td>");
-    bodyAdd.html(info);
-    parentBody.append(bodyAdd);
+  tableRow: function(rowId, parentBody){
+    var tableRow = $("<tr>");
+    tableRow.attr("id", rowId);
+    parentBody.append(tableRow);
+    return;
+  },
+
+  rowAddition: function(info, rowId){
+    var rowAdd = $("<td>");
+    rowAdd.html(info);
+    rowId.append(rowAdd);
     return;
   }
 }
+
   var userCount;
   database.ref("variables/").on("value", function(snapshot) {
       userCount = snapshot.val().userCount;
@@ -145,12 +151,28 @@ var tableGen ={
 
     newUser.userName = $("#nameInput").val().trim();
     //newUser.uid = userCount;
+    $("#signInArea").empty();
     database.ref("users/").push(newUser);
 
-    $("#nameInput").val("");
-
-    $("#signInArea").empty();
   });
 
+  database.ref("users/").on("child_added", function(childSnapshot, prevChildKey){
+    panelGen.createPanel("Top Players", "topPlayers" ,$("#signInArea"));
+    tableGen.createTable("topTable", $("#topPlayers"));
+    tableGen.tableHeadInitial("players", $("#topTable"));
+    tableGen.tableHeaders("User Name", $("#players"));
+    tableGen.tableBody("topBody", $("#topTable"));
+
+    /*if(userCount > 5){
+      for(var i = 1; i <=5; i++){
+        tableGen.bodyAdd(childSnapshot.val().userName, $("#topBody"));
+      }
+    }
+    else{*/
+      tableGen.tableRow("playerName", $("#topBody"));
+      tableGen.rowAddition(childSnapshot.val().userName, $("#playerName"));
+  //  }
+    return;
+  });
 
 });
