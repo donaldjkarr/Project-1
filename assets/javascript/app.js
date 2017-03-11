@@ -88,16 +88,16 @@ $(document).ready(function(){
 
       //for each fixture prints into a table row before appending new row
       for(var i =0; i < matchArray.length; i++){
-      userPicks.addPick(matchArray[i]);
+      userPicks.addPick(matchArray[i], i);
       $("userpick").append(pickRow);
       }
       return;
     },
 
-    addPick: function(arrayInput){
+    addPick: function(arrayInput, data){
       pickRow = $("<tr>");
       var newPick = $("<td>");
-      newPick.html("<span>"+ arrayInput.homeTeamName + " <input type='radio'>  " + "</span>" + "<span>" + arrayInput.awayTeamName + " <input type='radio'>  " + "</span>" + "<span>" + "Draw" + " <input type='radio'>" + "<span>");
+      newPick.html("<span>"+ arrayInput.homeTeamName + " <input type='radio' name='radioHome" + data +"'>  " + "</span>" + "<span>" + arrayInput.awayTeamName + " <input type='radio' name='radioAway" + data +"'>  " + "</span>" + "<span>" + "Draw" + " <input type='radio' name='radioDraw" + data +"'>" + "<span>");
       pickRow.append(newPick);
       $("#userpick").append(pickRow);
       return;
