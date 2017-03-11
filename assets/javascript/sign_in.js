@@ -8,10 +8,12 @@ $(document).ready(function(){
     messagingSenderId: "1033595008210"
   };
 
+
   firebase.initializeApp(config);
   var database = firebase.database();
+  var currentUserUid;
+
 //TODO:Need to add change for auth state with this function
-//TODO:need to remove User count and generate a seperate object for username and allow that to be used for logging in
 //TODO: With User UID should be possible to save picks off to databse by specific user.
 
   /*firebase.auth().onAuthStateChanged(firebaseUser => {
@@ -31,33 +33,117 @@ $(document).ready(function(){
     }
   });*/
 
-//When Log in button is pressed, verifies if the user exists and logs them in.
-//They used e =>{} in the example video, this is the same as writing function(){}
- $(document).on("click", "#logInSubmit", e =>{
-    event.preventDefault();
-    const email = $("#emailInput").val().trim();
-    const password = $("#passwordInput").val();
-    const auth = firebase.auth();
-
-    const promise = auth.signInWithEmailAndPassword(email, password);
-
-    promise.catch(e => console.log(e.message));
+  //function takes User information and puts onto firebase
+  function writeUserData(userId, name, email) {
+  firebase.database().ref('users/' + userId).set({
+    userName: name,
+    email: email
   });
+}
 
 //When User Submit button is pressed, submits the email and password to create a new account
-//TODO: Username isnt stored with any type of information associating Username with the User email and password.
  $(document).on("click", "#newUserSubmit", e =>{
  //btnSignUp.on("click", e => {
    event.preventDefault();
    const email = $("#emailInput").val().trim();
    const password = $("#passwordInput").val();
    const auth = firebase.auth();
+   const userName = $("#nameInput").val().trim();
 
    const promise = auth.createUserWithEmailAndPassword(email, password);
-
    promise.catch(e => console.log(e.message));
+
+   // if new log in is successful, firebase will update with new user
+   firebase.auth().onAuthStateChanged(firebaseUser => {
+     if(firebaseUser){
+       var userId = firebase.auth().currentUser.uid;
+       //writeUserData(userId, name, email)
+       writeUserData(userId, userName, email);
+     }
+   });
  });
 
+ //When Log in button is pressed, verifies if the user exists and logs them in.
+ //They used e =>{} in the example video, this is the same as writing function(){}
+  $(document).on("click", "#logInSubmit", e =>{
+     event.preventDefault();
+     const email = $("#emailInput").val().trim();
+     const password = $("#passwordInput").val();
+     const auth = firebase.auth();
+
+     const promise = auth.signInWithEmailAndPassword(email, password);
+     promise.catch(e => console.log(e.message));
+   });
+
+   //logs the current user out of firebase
+   $(document).on("click", "#logOutBtn", e =>{
+     currentUserUid = "";
+     firebase.auth().signOut();
+   })
+
+   firebase.auth().onAuthStateChanged(firebaseUser => {
+     //if user is logged in trigger if
+     if(firebaseUser){
+         $("#signInArea").empty();
+       currentUserUid = firebase.auth().currentUser.uid;
+
+       panelGen.createPanel("Top Players", "topPlayers" ,$("#signInArea"));
+       tableGen.createTable("topTable", $("#topPlayers"));
+       tableGen.tableHeadInitial("players", $("#topTable"));
+       tableGen.tableHeaders("User Name", $("#players"));
+       tableGen.tableBody("topBody", $("#topTable"));
+
+       database.ref("users/").on("child_added", function(childSnapshot, prevChildKey){
+
+         var tableRow = $("<tr>");
+         var tableColumn = $("<td>");
+         tableColumn.html(childSnapshot.val().userName);
+         tableRow.append(tableColumn);
+         $("#topBody").append(tableRow);
+     });
+     //adds a logOut button allowing user to logout
+     var logOut = $("<button>");
+     logOut.addClass("btn btn-primary btn-lg");
+     logOut.attr("id", "logOutBtn");
+     logOut.html("Log Out");
+     $("#topPlayers").append(logOut);
+     return;
+
+   }
+   //else statement triggers when no one is logged in
+   else{
+     $("#signInArea").empty();
+     //When the page loads, the leaderboard is populated with all of the users from firebase
+     panelGen.createPanel("Top Players", "topPlayers" ,$("#signInArea"));
+     tableGen.createTable("topTable", $("#topPlayers"));
+     tableGen.tableHeadInitial("players", $("#topTable"));
+     tableGen.tableHeaders("User Name", $("#players"));
+     tableGen.tableBody("topBody", $("#topTable"));
+
+     database.ref("users/").on("child_added", function(snapshot){
+
+       var tableRow = $("<tr>");
+       var tableColumn = $("<td>");
+       tableColumn.html(snapshot.val().userName);
+       tableRow.append(tableColumn);
+       $("#topBody").append(tableRow);
+       return;
+     });
+
+
+     var logIn = $("<button>");
+     logIn.addClass("btn btn-primary btn-lg");
+     logIn.attr("id", "logInBtn");
+     logIn.html("Log In");
+     $("#topPlayers").append(logIn).append(" ");
+
+     var signUp = $("<button>");
+     signUp.addClass("btn btn-info btn-lg");
+     signUp.attr("id", "signUpBtn");
+     signUp.html("Sign Up");
+     $("#topPlayers").append(signUp);
+   }
+   });
 
 
 //object contains all the functions needed to generate a panel
@@ -178,12 +264,6 @@ var tableGen ={
   }
 }
 
-//Will probably be taken out as UID replaces userCount
-  var userCount;
-  database.ref("variables/").on("value", function(snapshot) {
-      userCount = snapshot.val().userCount;
-  });
-
   //clicking log in button removes leaderboard and fills div with log in form
   $(document).on("click", "#logInBtn", function(){
     //prevents default and empties div to replace with sign in form
@@ -229,56 +309,12 @@ var tableGen ={
   $(document).on("click", "#newUserSubmit", function(){
     event.preventDefault();
 
-    userCount++
-    database.ref("variables/").set({
-        userCount: userCount
-      });
-
-    var newUser = {
-      userName: name,
-      uid: userCount
-    }
-
-    newUser.userName = $("#nameInput").val().trim();
-    //newUser.uid = userCount;
     $("#signInArea").empty();
     panelGen.createPanel("Top Players", "topPlayers" ,$("#signInArea"));
     tableGen.createTable("topTable", $("#topPlayers"));
     tableGen.tableHeadInitial("players", $("#topTable"));
     tableGen.tableHeaders("User Name", $("#players"));
     tableGen.tableBody("topBody", $("#topTable"));
-    database.ref("users/").push(newUser);
-
   });
-
-  //When the page loads, the leaderboard is populated with all of the users from firebase
-  panelGen.createPanel("Top Players", "topPlayers" ,$("#signInArea"));
-  tableGen.createTable("topTable", $("#topPlayers"));
-  tableGen.tableHeadInitial("players", $("#topTable"));
-  tableGen.tableHeaders("User Name", $("#players"));
-  tableGen.tableBody("topBody", $("#topTable"));
-
-  database.ref("users/").on("child_added", function(snapshot){
-
-    var tableRow = $("<tr>");
-    var tableColumn = $("<td>");
-    tableColumn.html(snapshot.val().userName);
-    tableRow.append(tableColumn);
-    $("#topBody").append(tableRow);
-    return;
-  });
-
-
-  var logIn = $("<button>");
-  logIn.addClass("btn btn-primary btn-lg");
-  logIn.attr("id", "logInBtn");
-  logIn.html("Log In");
-  $("#topPlayers").append(logIn).append(" ");
-
-  var signUp = $("<button>");
-  signUp.addClass("btn btn-info btn-lg");
-  signUp.attr("id", "signUpBtn");
-  signUp.html("Sign Up");
-  $("#topPlayers").append(signUp);
 
 });
