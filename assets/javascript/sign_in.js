@@ -1,5 +1,5 @@
 $(document).ready(function(){
-
+  //initial configuration for firebase
   var config = {
     apiKey: "AIzaSyDsSl_sMP6qnwW8Wun2VkagkB5Xtv5B7A4",
     authDomain: "project-1-60d84.firebaseapp.com",
@@ -31,8 +31,9 @@ $(document).ready(function(){
     }
   });*/
 
+//When Log in button is pressed, verifies if the user exists and logs them in.
+//They used e =>{} in the example video, this is the same as writing function(){}
  $(document).on("click", "#logInSubmit", e =>{
-  //btnLogIn.on("click", e => {
     event.preventDefault();
     const email = $("#emailInput").val().trim();
     const password = $("#passwordInput").val();
@@ -43,6 +44,8 @@ $(document).ready(function(){
     promise.catch(e => console.log(e.message));
   });
 
+//When User Submit button is pressed, submits the email and password to create a new account
+//TODO: Username isnt stored with any type of information associating Username with the User email and password.
  $(document).on("click", "#newUserSubmit", e =>{
  //btnSignUp.on("click", e => {
    event.preventDefault();
@@ -59,6 +62,7 @@ $(document).ready(function(){
 
 //object contains all the functions needed to generate a panel
 var panelGen = {
+  //Creates the initial panel and places it within a specified parent element
   createPanel: function(panelTitle, bodyId, parentDiv){
     var panel = $("<div>");
     panel.addClass("panel panel-primary");
@@ -79,14 +83,17 @@ var panelGen = {
   }
 }
 
+//this object contains all the functions necessary to generate a form
 var formGen = {
 
+  //this function creates the initial form
   createForm: function(parentPanel, formId){
     var newForm = $("<form>");
     newForm.attr("id", formId)
     parentPanel.append(newForm);
     return;
   },
+
   //creates a form group and attaches it to specified form
   formGroup: function(inputId, formText, type, parentForm){
     var formGroup = $("<div>");
@@ -106,6 +113,7 @@ var formGen = {
     parentForm.append(formGroup);
     return;
   },
+  //creates a submit button at the bottom of the form
   createSubmitBtn: function(btnId, btnText, parentForm){
     var btnSubmit =$("<button>");
     btnSubmit.addClass("btn btn-primary");
@@ -118,8 +126,9 @@ var formGen = {
     }
   }
 
+//this object contains all the functions necessary to generate a table
 var tableGen ={
-
+  //Creates the initial table
   createTable: function(tableId, parentPanel){
     var newTable = $("<table>");
     newTable.addClass("table table-striped table-condensed");
@@ -128,6 +137,7 @@ var tableGen ={
     return;
   },
 
+  //creates the table header row
   tableHeadInitial: function(headerId, parentTable){
     var tableHead =$("<thead>");
     var tableHeaderRow = $("<tr>");
@@ -136,7 +146,7 @@ var tableGen ={
     parentTable.append(tableHead);
     return;
   },
-
+  //creates the column headings and append them to the table header row
   tableHeaders: function(headerText, tableHeaderId){
     var tableHeader = $("<th>");
     tableHeader.html(headerText);
@@ -144,6 +154,7 @@ var tableGen ={
     return;
   },
 
+  //creates the table's body and appends it to the parent table
   tableBody: function(bodyId, parentTable){
     var tableBody = $("<tbody>");
     tableBody.attr("id", bodyId);
@@ -151,13 +162,14 @@ var tableGen ={
     return
   },
 
+  //creates a single row that us appended to the parent table
   tableRow: function(rowId, parentBody){
     var tableRow = $("<tr>");
     tableRow.attr("id", rowId);
     parentBody.append(tableRow);
     return;
   },
-
+//populates a parent row with a column
   rowAddition: function(info, rowId){
     var rowAdd = $("<td>");
     rowAdd.html(info);
@@ -166,38 +178,54 @@ var tableGen ={
   }
 }
 
+//Will probably be taken out as UID replaces userCount
   var userCount;
   database.ref("variables/").on("value", function(snapshot) {
       userCount = snapshot.val().userCount;
   });
 
-  $(document).on("click", "#signInBtn", function(){
+  //clicking log in button removes leaderboard and fills div with log in form
+  $(document).on("click", "#logInBtn", function(){
     //prevents default and empties div to replace with sign in form
    event.preventDefault();
     $("#signInArea").empty();
 
+    //panelGen.createPanel(panelTitle, bodyId, parentDiv)
     panelGen.createPanel("Please Sign In", "signInPanel", $("#signInArea"));
+
+    //formGen.createForm(parentPanel, formId)
     formGen.createForm($("#signInPanel"), "signInForm");
+
+    //formGen.formGroup(inputId, formText, type, parentForm)
     formGen.formGroup("emailInput", "Email", "email", $("#signInForm"));
     formGen.formGroup("passwordInput", "Password", "password", $("#signInForm"));
-    formGen.createSubmitBtn("logInSubmit", "Log In", $("#signInForm"));
 
+    //formGen.createSubmitBtn(btnId, btnText, parentForm)
+    formGen.createSubmitBtn("logInSubmit", "Log In", $("#signInForm"));
   });
 
+  //clicking sign up button removes leaderboard and fills div with new user form
   $(document).on("click", "#signUpBtn", function(){
-    //prevents default and empties div to replace with sign in form
+    //prevents default and empties div to replace with sign up form
    event.preventDefault();
     $("#signInArea").empty();
 
+    //panelGen.createPanel(panelTitle, bodyId, parentDiv)
     panelGen.createPanel("Please Sign In", "signInPanel", $("#signInArea"));
+
+    //formGen.createForm(parentPanel, formId)
     formGen.createForm($("#signInPanel"), "signInForm");
+
+    //formGen.formGroup(inputId, formText, type, parentForm)
     formGen.formGroup("nameInput", "User Name", "text", $("#signInForm"));
     formGen.formGroup("emailInput", "Email", "email", $("#signInForm"));
     formGen.formGroup("passwordInput", "Password", "password", $("#signInForm"));
-    formGen.createSubmitBtn("newUserSubmit", "Submit", $("#signInForm"));
 
+    //formGen.createSubmitBtn(btnId, btnText, parentForm)
+    formGen.createSubmitBtn("newUserSubmit", "Submit", $("#signInForm"));
   });
 
+  //TODO: this function needs to be changed to store newUser information in an object associated with the user's UID
   $(document).on("click", "#newUserSubmit", function(){
     event.preventDefault();
 
@@ -222,6 +250,8 @@ var tableGen ={
     database.ref("users/").push(newUser);
 
   });
+
+  //When the page loads, the leaderboard is populated with all of the users from firebase
   panelGen.createPanel("Top Players", "topPlayers" ,$("#signInArea"));
   tableGen.createTable("topTable", $("#topPlayers"));
   tableGen.tableHeadInitial("players", $("#topTable"));
@@ -230,20 +260,6 @@ var tableGen ={
 
   database.ref("users/").on("child_added", function(snapshot){
 
-    /*  var sv = snapshot.val();
-      // Getting an array of each key In the snapshot object
-      var svArr = Object.keys(sv);
-      // Finding the last user's key
-      var lastIndex = svArr.length - 1;
-      var lastKey = svArr[lastIndex];
-      // Using the last user's key to access the last added user object
-      var lastObj = sv[lastKey]
-      // Console.loging the last user's data
-      console.log(lastObj.name);
-      console.log(lastObj.email);
-      console.log(lastObj.age);
-      console.log(lastObj.comment); */
-
     var tableRow = $("<tr>");
     var tableColumn = $("<td>");
     tableColumn.html(snapshot.val().userName);
@@ -251,9 +267,11 @@ var tableGen ={
     $("#topBody").append(tableRow);
     return;
   });
+
+
   var logIn = $("<button>");
   logIn.addClass("btn btn-primary btn-lg");
-  logIn.attr("id", "signInBtn");
+  logIn.attr("id", "logInBtn");
   logIn.html("Log In");
   $("#topPlayers").append(logIn).append(" ");
 
