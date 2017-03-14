@@ -121,13 +121,13 @@ var tableGen ={
   $("#signInBtn").on("click", function(){
     //prevents default and empties div to replace with sign in form
     event.preventDefault();
+
     $("#signInArea").empty();
 
     panelGen.createPanel("Please Sign In", "signInPanel", $("#signInArea"));
     formGen.createForm($("#signInPanel"), "signInForm");
     formGen.formGroup("nameInput", "User Name", $("#signInForm"));
     formGen.createSubmitBtn("nameSubmit", "Submit Name", $("#signInForm"));
-
   });
 
   $(document).on("click", "#nameSubmit", function(){
