@@ -37,8 +37,9 @@ $(document).ready(function(){
     //2/2 functions that print fixtures
     addMatch: function(arrayInput, data){
       matchRow = $("<tr>");
-      var newFixture = $("<td>");
+
       newFixture.html("<span data-game="+ data +"-H>"+ arrayInput.homeTeamName +"</span> vs <span data-game="+ data +"-A>" + arrayInput.awayTeamName + "</span>");
+      
       matchRow.append(newFixture);
       $("#fixtures").append(matchRow);
       return;
@@ -185,14 +186,15 @@ $(document).ready(function(){
   });
 
 
-    //API call to obtain fixtures for a specified match day 
+
+    //API call to obtain fixtures for a specified match day
     //This actually calls object and object runs functions
-  $.ajax({
-    headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-    url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
-    dataType: 'json',
-    type: 'GET',
-  }).done(function(response) {
+	$.ajax({
+	  headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
+	  url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
+	  dataType: 'json',
+	  type: 'GET',
+	}).done(function(response) {
     console.log(response);
     fixtureGen.printMatches(response.fixtures);
     userPicks.printPicks(response.fixtures);
