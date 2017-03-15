@@ -13,33 +13,13 @@ $(document).ready(function(){
   var database = firebase.database();
   var currentUserUid;
 
-//TODO:Need to add change for auth state with this function
-//TODO: With User UID should be possible to save picks off to databse by specific user.
-
-  /*firebase.auth().onAuthStateChanged(firebaseUser => {
-    if(firebaseUser){
-      $("#changingPanel").empty();
-        var additionForm = $("<form>");
-        additionForm.attr("id", "addForm");
-        $("#changingPanel").append(additionForm);
-
-        inputContent("trainName", "Train Name:", $("#addForm"));
-        inputContent("destination", "Destination:", $("#addForm"));
-        inputContent("firstTime", "First Train:", $("#addForm"));
-        inputContent("frequency", "Frequency:", $("#addForm"));
-
-        buttonGen("newTrainBtn", "Submit", $("#addForm"), "primary");
-        buttonGen("logOut", "Log Out", $("#addForm"), "secondary");
-    }
-  });*/
-
   //function takes User information and puts onto firebase
   function writeUserData(userId, name, email) {
-  firebase.database().ref('users/' + userId).set({
-    userName: name,
-    email: email
-  });
-}
+    firebase.database().ref('users/' + userId).set({
+      userName: name,
+      email: email
+    });
+  }
 
 //When User Submit button is pressed, submits the email and password to create a new account
  $(document).on("click", "#newUserSubmit", e =>{
@@ -52,15 +32,11 @@ $(document).ready(function(){
 
    const promise = auth.createUserWithEmailAndPassword(email, password);
    promise.catch(e => console.log(e.message));
-
-   // if new log in is successful, firebase will update with new user
-   firebase.auth().onAuthStateChanged(firebaseUser => {
-     if(firebaseUser){
-       var userId = firebase.auth().currentUser.uid;
-       //writeUserData(userId, name, email)
-       writeUserData(userId, userName, email);
-     }
-   });
+   promise.then(function(){
+     var userId = firebase.auth().currentUser.uid;
+     //writeUserData(userId, name, email)
+     writeUserData(userId, userName, email);
+   })
  });
 
  //When Log in button is pressed, verifies if the user exists and logs them in.
@@ -87,20 +63,29 @@ $(document).ready(function(){
          $("#signInArea").empty();
        currentUserUid = firebase.auth().currentUser.uid;
 
+       //panelGen.createPanel(panelTitle, bodyId, parentDiv)
        panelGen.createPanel("Top Players", "topPlayers" ,$("#signInArea"));
+
+       //tableGen.createTable(tableId, parentPanel);
        tableGen.createTable("topTable", $("#topPlayers"));
+
+       //tableGen.tableHeadInitial(headerId, parentTable);
        tableGen.tableHeadInitial("players", $("#topTable"));
+
+       //tableGen.tableHeaders(headerText, tableHeaderId);
        tableGen.tableHeaders("User Name", $("#players"));
+
+       //tableGen.tableBody(bodyId, parentTable);
        tableGen.tableBody("topBody", $("#topTable"));
 
+       //anytime a user is added, this prints a table with all users.
        database.ref("users/").on("child_added", function(childSnapshot, prevChildKey){
-
          var tableRow = $("<tr>");
          var tableColumn = $("<td>");
          tableColumn.html(childSnapshot.val().userName);
          tableRow.append(tableColumn);
          $("#topBody").append(tableRow);
-     });
+       });
      //adds a logOut button allowing user to logout
      var logOut = $("<button>");
      logOut.addClass("btn btn-primary btn-lg");
@@ -112,6 +97,7 @@ $(document).ready(function(){
    }
    //else statement triggers when no one is logged in
    else{
+     //follows the same format as above, if there is not user logged in, the table of all users prints. with log in/sign up options at the bottom
      $("#signInArea").empty();
      //When the page loads, the leaderboard is populated with all of the users from firebase
      panelGen.createPanel("Top Players", "topPlayers" ,$("#signInArea"));
@@ -120,11 +106,10 @@ $(document).ready(function(){
      tableGen.tableHeaders("User Name", $("#players"));
      tableGen.tableBody("topBody", $("#topTable"));
 
-     database.ref("users/").on("child_added", function(snapshot){
-
+     database.ref("users/").on("child_added", function(childSnapshot, prevChildKey){
        var tableRow = $("<tr>");
        var tableColumn = $("<td>");
-       tableColumn.html(snapshot.val().userName);
+       tableColumn.html(childSnapshot.val().userName);
        tableRow.append(tableColumn);
        $("#topBody").append(tableRow);
        return;
@@ -305,16 +290,10 @@ var tableGen ={
     formGen.createSubmitBtn("newUserSubmit", "Submit", $("#signInForm"));
   });
 
-  //TODO: this function needs to be changed to store newUser information in an object associated with the user's UID
+//creates a new user
   $(document).on("click", "#newUserSubmit", function(){
     event.preventDefault();
-
-    $("#signInArea").empty();
-    panelGen.createPanel("Top Players", "topPlayers" ,$("#signInArea"));
-    tableGen.createTable("topTable", $("#topPlayers"));
-    tableGen.tableHeadInitial("players", $("#topTable"));
-    tableGen.tableHeaders("User Name", $("#players"));
-    tableGen.tableBody("topBody", $("#topTable"));
+    //if user Sign in happens the auth state change function triggers
   });
 
 });
