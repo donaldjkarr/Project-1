@@ -37,7 +37,7 @@ $(document).ready(function(){
     //2/2 functions that print fixtures
     addMatch: function(arrayInput, data){
       matchRow = $("<tr>");
-
+      newFixture = $("<td>");
       newFixture.html("<span data-game="+ data +"-H>"+ arrayInput.homeTeamName +"</span> vs <span data-game="+ data +"-A>" + arrayInput.awayTeamName + "</span>");
       
       matchRow.append(newFixture);
@@ -171,7 +171,7 @@ $(document).ready(function(){
     printPoints: function(){
       pointRow = $("<tr>");
       var newPoints = $("<td>");
-      newPoints.html("<span><H1>" + pointCounter + "</H1></span>");
+      newPoints.html("<span><H3>" + pointCounter + "</H3></span>");
       pointRow.append(newPoints);
       $("#userpoints").append(pointRow);
     }
