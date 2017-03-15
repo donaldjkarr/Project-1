@@ -1,4 +1,8 @@
+
+//These global variables saves the list of matches so we can pull that data into a table later
+//and takes the user's submitted picks and saves it to possibly push to 
 var matches = [];
+var submittedPicks = [];
 
 $(document).ready(function(){
 
@@ -82,7 +86,6 @@ $(document).ready(function(){
   }
 
   var userPicks = {
-
     printPicks: function(matchArray){
       //takes matchDay from the JSOn object and prints it into header
       $("#matchdaypicks").html("Matchday: " + matchArray[0].matchday);
@@ -98,10 +101,19 @@ $(document).ready(function(){
     addPick: function(arrayInput, data){
       pickRow = $("<tr>");
       var newPick = $("<td>");
-      newPick.html("<span>"+ arrayInput.homeTeamName + " <input type='radio' name='radioRow" + data +"' value='home"+data+"'>  " + "</span>" + "<span>" + arrayInput.awayTeamName + " <input type='radio' name='radioRow" + data +"' value='away"+data+"'>  " + "</span>" + "<span>" + "Draw" + " <input type='radio' name='radioRow" + data + "' value='draw"+data+"'></span>");
+      newPick.html("<span>"+ arrayInput.homeTeamName + " <input type='radio' name='radioRow" + data +"' value='" + arrayInput.homeTeamName + "'>  " + "</span>" + "<span>" + arrayInput.awayTeamName + " <input type='radio' name='radioRow" + data +"' value='" + arrayInput.awayTeamName + "'>  " + "</span>" + "<span>" + "Draw" + " <input type='radio' name='radioRow" + data + "' value='DRAW'></span>");
       pickRow.append(newPick);
       $("#userpick").append(pickRow);
       return;
+    },
+
+    submitPick: function(matchArray){
+      for(var i = 0; i < matchArray.length; i++){
+        $.each($("input[name='radioRow" + i + "']:checked"), function(){
+          submittedPicks.push($(this).val());
+          console.log($(this).val());
+        });
+      }
     }
   }
 
@@ -130,6 +142,27 @@ $(document).ready(function(){
     },
 
   }
+
+  var userResults = {
+
+    pointCount: 0,
+    //This compares the user's choices with that the actual results
+    compare: function(){
+
+    },
+    //This prints the points to HTML
+    printPoints: function(){
+
+    }
+  }
+
+//Takes pick options and uploads attaches them to the username.
+  $("#submitPicks").on("click", function(){
+      submittedPicks = [];
+      userPicks.submitPick(matches);
+      userResults.compare();
+      userResults.printPoints();  
+  });
 
 
     //API call to obtain fixtures for a specified match day 
