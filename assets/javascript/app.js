@@ -1,8 +1,11 @@
 
 //These global variables saves the list of matches so we can pull that data into a table later
-//and takes the user's submitted picks and saves it to possibly push to 
+//and takes the user's submitted picks and saves it to possibly push to firebase
+//It also works in place of the data pulled from the user's account to build
+//the web application while constructing user authentication.
 var matches = [];
 var submittedPicks = [];
+var pointCounter = 0;
 
 $(document).ready(function(){
 
@@ -101,7 +104,7 @@ $(document).ready(function(){
     addPick: function(arrayInput, data){
       pickRow = $("<tr>");
       var newPick = $("<td>");
-      newPick.html("<span>"+ arrayInput.homeTeamName + " <input type='radio' name='radioRow" + data +"' value='" + arrayInput.homeTeamName + "'>  " + "</span>" + "<span>" + arrayInput.awayTeamName + " <input type='radio' name='radioRow" + data +"' value='" + arrayInput.awayTeamName + "'>  " + "</span>" + "<span>" + "Draw" + " <input type='radio' name='radioRow" + data + "' value='DRAW'></span>");
+      newPick.html("<span>"+ arrayInput.homeTeamName + " <input type='radio' name='radioRow" + data +"' value='" + arrayInput.homeTeamName + "'>  " + "</span>" + "<span>" + arrayInput.awayTeamName + " <input type='radio' name='radioRow" + data +"' value='" + arrayInput.awayTeamName + "'>  " + "</span>" + "<span>" + "Draw" + " <input type='radio' name='radioRow" + data + "' value='Draw'></span>");
       pickRow.append(newPick);
       $("#userpick").append(pickRow);
       return;
@@ -144,15 +147,32 @@ $(document).ready(function(){
   }
 
   var userResults = {
-
-    pointCount: 0,
     //This compares the user's choices with that the actual results
     compare: function(){
-
+        for(var i = 0; i < matches.length; i++){
+          if(matches[i] == "POSTPONED"){
+            console.log("Postponed, no points yet!");
+          }
+          if(matches[i] == submittedPicks[i]){
+            if(matches[i] == "Draw"){
+              console.log("A draw, one point for you!");
+              pointCounter++;
+            }
+            else{
+              console.log("You got it!  Three points!");
+              pointCounter += 3;
+            }
+          }
+        }
+      userResults.printPoints();
     },
     //This prints the points to HTML
     printPoints: function(){
-
+      pointRow = $("<tr>");
+      var newPoints = $("<td>");
+      newPoints.html("<span><H1>" + pointCounter + "</H1></span>");
+      pointRow.append(newPoints);
+      $("#userpoints").append(pointRow);
     }
   }
 
