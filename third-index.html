@@ -47,7 +47,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.html">Third Page</a>
+                <a class="navbar-brand" href="index.html">Home Page</a>
             </div>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -62,6 +62,9 @@
                     <li>
                         <button class="btn" data-balloon-length="medium" data-balloon="All of the Creators are Unavailable at the Moment, Please Try Again Later." data-balloon-pos="down">Contact</button>
                     </li>
+                    <li>
+                        <a class="btn" href="second-index.html">Second Index</a>
+                    </li>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -73,59 +76,61 @@
     <div class="container">
 		<div class="row">
 
-                  <div class="col-md-4">
-                    <h1>My Results</h1>
+                  <div class="col-md-5">
+                    <h1>My Picks</h1>
                     <div class="panel panel-primary">
-                    <div class="panel-heading" id=""></div>
+                    <div class="panel-heading" id="matchdaypicks"></div>
                       <table class="table table-striped table-condensed">
                         <thead>
                           <tr>
                             <th>User Pick</th>
                           </tr>
                         </thead>
-                        <tbody id="">
+                        <tbody id="userpick">
 
                         </tbody>
                       </table>
                     </div>
+                    <button type="button" class="btn btn-primary" id="submitPicks"> Submit</button>
                   </div>
 
 
             <div class="col-md-4">
-                <h1>My Points</h1>
+                <h1>Final Matches</h1>
                 	  <div class="panel panel-primary">
-                	  <div class="panel-heading" id=""></div>
-                	    <table class="table table-striped table-condense">
-                	      <thead>
-                	        <tr>
-
-                	        </tr>
-                	      </thead>
-                	      <tbody id="">
-
-                	      </tbody>
-                	    </table>
-                	  </div>
-                	</div>
-
-
-            <div class="col-md-4">
-                <h1>Full Leaderboard</h1>
-                	  <div class="panel panel-primary">
-                	  <div class="panel-heading" id=""></div>
+                	  <div class="panel-heading" id="finalresults"></div>
                 	    <table class="table table-striped table-condensed">
                 	      <thead>
                 	        <tr>
-                	          <th>User</th>
-                	          <th>Total Points</th>
+
                 	        </tr>
                 	      </thead>
-                	      <tbody id="">
+                	      <tbody id="final">
 
                 	      </tbody>
                 	    </table>
                 	  </div>
                 	</div>
+
+
+            <div class="col-md-3">
+                <h1>My Points</h1>
+                      <div class="panel panel-primary">
+                      <div class="panel-heading" id=""></div>
+                        <table class="table table-striped table-condense">
+                          <thead>
+                            <tr>
+                             <th>Total</th>
+
+
+                            </tr>
+                          </thead>
+                          <tbody id="userpoints">
+
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>       
 
 
         </div>

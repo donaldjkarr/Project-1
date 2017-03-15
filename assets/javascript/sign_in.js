@@ -251,7 +251,7 @@ var tableGen ={
 
   //clicking log in button removes leaderboard and fills div with log in form
   $(document).on("click", "#logInBtn", function(){
-    //prevents default and empties div to replace with sign in form
+    //prevents default and empties div to replace with sign in for
    event.preventDefault();
     $("#signInArea").empty();
 
@@ -264,7 +264,7 @@ var tableGen ={
     //formGen.formGroup(inputId, formText, type, parentForm)
     formGen.formGroup("emailInput", "Email", "email", $("#signInForm"));
     formGen.formGroup("passwordInput", "Password", "password", $("#signInForm"));
-
+    
     //formGen.createSubmitBtn(btnId, btnText, parentForm)
     formGen.createSubmitBtn("logInSubmit", "Log In", $("#signInForm"));
   });
