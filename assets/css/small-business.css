@@ -8,6 +8,13 @@ body {
     padding-top: 70px; /* Required padding for .navbar-fixed-top. Change if height of navigation changes. */
 }
 
+#appname {
+    color: white;
+    float: right;
+    margin-right: 120px;
+    font-weight: bold;
+}
+
 .navbar-fixed-top .nav {
     padding: 15px 0;
 }

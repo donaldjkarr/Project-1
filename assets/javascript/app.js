@@ -1,3 +1,7 @@
+var matches = [];
+
+var game0;
+
 $(document).ready(function(){
 
   var config = {
@@ -8,8 +12,7 @@ $(document).ready(function(){
       messagingSenderId: "1033595008210"
     };
     firebase.initializeApp(config);
-
-  //fixtureGen object contains all the functions used for generating the table of fixtures
+      //fixtureGen object contains all the functions used for generating the table of fixtures
   var fixtureGen = {
     matchRow: "",
 
@@ -84,12 +87,12 @@ $(document).ready(function(){
 
     printPicks: function(matchArray){
       //takes matchDay from the JSOn object and prints it into header
-      $("#matchDay").html("Matchday: " + matchArray[0].matchday);
+      $("#matchdaypicks").html("Matchday: " + matchArray[0].matchday);
 
       //for each fixture prints into a table row before appending new row
       for(var i =0; i < matchArray.length; i++){
-      userPicks.addPick(matchArray[i], i);
-      $("userpick").append(pickRow);
+        userPicks.addPick(matchArray[i], i);
+        $("userpick").append(pickRow);
       }
       return;
     },
@@ -97,11 +100,37 @@ $(document).ready(function(){
     addPick: function(arrayInput, data){
       pickRow = $("<tr>");
       var newPick = $("<td>");
-      newPick.html("<span>"+ arrayInput.homeTeamName + " <input type='radio' name='radioHome" + data +"'>  " + "</span>" + "<span>" + arrayInput.awayTeamName + " <input type='radio' name='radioAway" + data +"'>  " + "</span>" + "<span>" + "Draw" + " <input type='radio' name='radioDraw" + data +"'>" + "<span>");
+      newPick.html("<span>"+ arrayInput.homeTeamName + " <input type='radio' name='radioRow" + data +"' value='home"+data+"'>  " + "</span>" + "<span>" + arrayInput.awayTeamName + " <input type='radio' name='radioRow" + data +"' value='away"+data+"'>  " + "</span>" + "<span>" + "Draw" + " <input type='radio' name='radioRow" + data + "' value='draw"+data+"'></span>");
       pickRow.append(newPick);
       $("#userpick").append(pickRow);
       return;
     }
+  }
+
+  var matchResults = {
+    printResults: function (matchArray){
+        $("#finalresults").html("Matchday " + matchArray[0].matchday + " Results");
+        for(var i = 0; i <matchArray.length; i++){
+            matchResults.addResult(matchArray[i], i);
+            
+        }
+    },
+    addResult: function(arrayInput, data){
+      console.log(arrayInput);
+      resultRow = $("<tr>");
+      var newResult = $("<td>");
+      if(arrayInput.status == "POSTPONED"){
+        newResult.html("<span> POSTPONED </span>");
+        resultRow.append(newResult);
+        $("#final").append(resultRow);  
+      }
+      else{
+        newResult.html("<span>"+arrayInput.homeTeamName + " " + arrayInput.result.goalsHomeTeam + " VS "+ arrayInput.awayTeamName + " " + arrayInput.result.goalsAwayTeam + "</span>");
+        resultRow.append(newResult);
+        $("#final").append(resultRow);
+      } 
+    },
+
   }
 
 
@@ -116,6 +145,8 @@ $(document).ready(function(){
     console.log(response);
     fixtureGen.printMatches(response.fixtures);
     userPicks.printPicks(response.fixtures);
+    gamesFinished(response.fixtures);
+    matchResults.printResults(response.fixtures);
   });
 
   //API call to obtain the league table
@@ -128,6 +159,46 @@ $(document).ready(function(){
     console.log(response);
     tableGen.createStandings(response);
   });
+
+
+function gamesFinished (fixtures){
+  //Check variable
+  console.log("GAMES FINISHED:  " + fixtures);
+  //Run through fixtures array to check results
+  for(var i = 0; i < fixtures.length; i++){
+    //If the game is finished
+    console.log(fixtures[i].status);
+    if(fixtures[i].status === "FINISHED"){
+        if(fixtures[i].result.goalsAwayTeam > fixtures[i].result.goalsHomeTeam){
+          matches.push(fixtures[i].awayTeamName);
+        }
+        if(fixtures[i].result.goalsAwayTeam < fixtures[i].result.goalsHomeTeam){
+          matches.push(fixtures[i].homeTeamName);
+        }
+        if(fixtures[i].result.goalsAwayTeam == fixtures[i].result.goalsHomeTeam){
+          matches.push("Draw");
+        }
+    }
+    if(fixtures[i].status === "POSTPONED"){
+          matches.push("POSTPONED");
+    }
+      console.log(matches);
+  }
+}
+
+$(document).on("click", "home0", function() {
+  if("home0" === matches[0]) {
+    game0 = "win";
+  }
+  if("away0" === matches[0]) {
+    game0 = "win";
+  }
+  if("draw0" === matches[0]) {
+    game0 = "draw";
+  }
+  console.log(game0);
+})
+
 
 
 /*Competition # and corresponding league
