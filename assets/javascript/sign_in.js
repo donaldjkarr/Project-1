@@ -1,15 +1,4 @@
 $(document).ready(function(){
-  //initial configuration for firebase
-  var config = {
-    apiKey: "AIzaSyDsSl_sMP6qnwW8Wun2VkagkB5Xtv5B7A4",
-    authDomain: "project-1-60d84.firebaseapp.com",
-    databaseURL: "https://project-1-60d84.firebaseio.com",
-    storageBucket: "project-1-60d84.appspot.com",
-    messagingSenderId: "1033595008210"
-  };
-
-
-  firebase.initializeApp(config);
   var database = firebase.database();
   var currentUserUid;
 
@@ -264,7 +253,7 @@ var tableGen ={
     //formGen.formGroup(inputId, formText, type, parentForm)
     formGen.formGroup("emailInput", "Email", "email", $("#signInForm"));
     formGen.formGroup("passwordInput", "Password", "password", $("#signInForm"));
-    
+
     //formGen.createSubmitBtn(btnId, btnText, parentForm)
     formGen.createSubmitBtn("logInSubmit", "Log In", $("#signInForm"));
   });
