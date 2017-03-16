@@ -1,6 +1,6 @@
 
 //These global variables saves the list of matches so we can pull that data into a table later
-//and takes the user's submitted picks and saves it to possibly push to 
+//and takes the user's submitted picks and saves it to possibly push to
 var matches = [];
 var submittedPicks = [];
 
@@ -14,6 +14,127 @@ $(document).ready(function(){
       messagingSenderId: "1033595008210"
     };
     firebase.initializeApp(config);
+    var database = firebase.database();
+    var currentUserUid;
+
+    //function takes User information and puts onto firebase
+    function writeUserData(userId, name, email) {
+      firebase.database().ref('users/' + userId).set({
+        userName: name,
+        email: email
+      });
+    }
+
+    //When User Submit button is pressed, submits the email and password to create a new account
+     $(document).on("click", "#newUserSubmit", e =>{
+     //btnSignUp.on("click", e => {
+       event.preventDefault();
+       const email = $("#emailInput").val().trim();
+       const password = $("#passwordInput").val();
+       const auth = firebase.auth();
+       const userName = $("#nameInput").val().trim();
+
+       const promise = auth.createUserWithEmailAndPassword(email, password);
+       promise.catch(e => console.log(e.message));
+       promise.then(function(){
+         var userId = firebase.auth().currentUser.uid;
+         //writeUserData(userId, name, email)
+         writeUserData(userId, userName, email);
+       })
+     });
+
+     //When Log in button is pressed, verifies if the user exists and logs them in.
+     //They used e =>{} in the example video, this is the same as writing function(){}
+      $(document).on("click", "#logInSubmit", e =>{
+         event.preventDefault();
+         const email = $("#emailInput").val().trim();
+         const password = $("#passwordInput").val();
+         const auth = firebase.auth();
+
+         const promise = auth.signInWithEmailAndPassword(email, password);
+         promise.catch(e => console.log(e.message));
+       });
+
+       //logs the current user out of firebase
+       $(document).on("click", "#logOutBtn", e =>{
+         currentUserUid = "";
+         firebase.auth().signOut();
+       })
+
+       firebase.auth().onAuthStateChanged(firebaseUser => {
+         //if user is logged in trigger if
+         if(firebaseUser){
+             $("#signInArea").empty();
+
+
+           currentUserUid = firebase.auth().currentUser.uid;
+
+           //panelGen.createPanel(panelTitle, bodyId, parentDiv)
+           panelGen.createPanel("Top Players", "topPlayers" ,$("#signInArea"));
+
+           //tableGen.createTable(tableId, parentPanel);
+           tableGen.createTable("topTable", $("#topPlayers"));
+
+           //tableGen.tableHeadInitial(headerId, parentTable);
+           tableGen.tableHeadInitial("players", $("#topTable"));
+
+           //tableGen.tableHeaders(headerText, tableHeaderId);
+           tableGen.tableHeaders("User Name", $("#players"));
+
+           //tableGen.tableBody(bodyId, parentTable);
+           tableGen.tableBody("topBody", $("#topTable"));
+
+           //anytime a user is added, this prints a table with all users.
+           database.ref("users/").on("child_added", function(childSnapshot, prevChildKey){
+             var tableRow = $("<tr>");
+             var tableColumn = $("<td>");
+             tableColumn.html(childSnapshot.val().userName);
+             tableRow.append(tableColumn);
+             $("#topBody").append(tableRow);
+           });
+         //adds a logOut button allowing user to logout
+         var logOut = $("<button>");
+         logOut.addClass("btn btn-primary btn-lg");
+         logOut.attr("id", "logOutBtn");
+         logOut.html("Log Out");
+         $("#topPlayers").append(logOut);
+         return;
+
+       }
+       //else statement triggers when no one is logged in
+       else{
+         //follows the same format as above, if there is not user logged in, the table of all users prints. with log in/sign up options at the bottom
+         $("#matchdaypicks").empty();
+         //When the page loads, the leaderboard is populated with all of the users from firebase
+         tableGen.createTable("topTable", $("#matchdaypicks"));
+         tableGen.tableHeadInitial("players", $("#topTable"));
+         tableGen.tableHeaders("User Name", $("#players"));
+         tableGen.tableBody("topBody", $("#topTable"));
+
+         database.ref("users/").on("child_added", function(childSnapshot, prevChildKey){
+           var tableRow = $("<tr>");
+           var tableColumn = $("<td>");
+           tableColumn.html(childSnapshot.val().userName);
+           tableRow.append(tableColumn);
+           $("#topBody").append(tableRow);
+           return;
+         });
+
+
+         var logIn = $("<button>");
+         logIn.addClass("btn btn-primary btn-lg");
+         logIn.attr("id", "logInBtn");
+         logIn.html("Log In");
+         $("#topPlayers").append(logIn).append(" ");
+
+         var signUp = $("<button>");
+         signUp.addClass("btn btn-info btn-lg");
+         signUp.attr("id", "signUpBtn");
+         signUp.html("Sign Up");
+         $("#topPlayers").append(signUp);
+       }
+       });
+
       //fixtureGen object contains all the functions used for generating the table of fixtures
   var fixtureGen = {
     matchRow: "",
@@ -34,9 +155,9 @@ $(document).ready(function(){
     //2/2 functions that print fixtures
     addMatch: function(arrayInput, data){
       matchRow = $("<tr>");
-
+      newFixture = $("<td>");
       newFixture.html("<span data-game="+ data +"-H>"+ arrayInput.homeTeamName +"</span> vs <span data-game="+ data +"-A>" + arrayInput.awayTeamName + "</span>");
-      
+
       matchRow.append(newFixture);
       $("#fixtures").append(matchRow);
       return;
@@ -123,7 +244,7 @@ $(document).ready(function(){
         $("#finalresults").html("Matchday " + matchArray[0].matchday + " Results");
         for(var i = 0; i <matchArray.length; i++){
             matchResults.addResult(matchArray[i], i);
-            
+
         }
     },
     addResult: function(arrayInput, data){
@@ -133,36 +254,53 @@ $(document).ready(function(){
       if(arrayInput.status == "POSTPONED"){
         newResult.html("<span> POSTPONED </span>");
         resultRow.append(newResult);
-        $("#final").append(resultRow);  
+        $("#final").append(resultRow);
       }
       else{
         newResult.html("<span>"+arrayInput.homeTeamName + " " + arrayInput.result.goalsHomeTeam + " VS "+ arrayInput.awayTeamName + " " + arrayInput.result.goalsAwayTeam + "</span>");
         resultRow.append(newResult);
         $("#final").append(resultRow);
-      } 
+      }
     },
 
   }
 
   var userResults = {
-
-    pointCount: 0,
-    //This compares the user's choices with that the actual results
-    compare: function(){
-
-    },
-    //This prints the points to HTML
-    printPoints: function(){
-
+      //This compares the user's choices with that the actual results
+      compare: function(){
+          for(var i = 0; i < matches.length; i++){
+            if(matches[i] == "POSTPONED"){
+              console.log("Postponed, no points yet!");
+            }
+            if(matches[i] == submittedPicks[i]){
+              if(matches[i] == "Draw"){
+                console.log("A draw, one point for you!");
+                pointCounter++;
+              }
+              else{
+                console.log("You got it!  Three points!");
+                pointCounter += 3;
+              }
+            }
+          }
+        userResults.printPoints();
+      },
+      //This prints the points to HTML
+      printPoints: function(){
+        pointRow = $("<tr>");
+        var newPoints = $("<td>");
+        newPoints.html("<span><H3>" + pointCounter + "</H3></span>");
+        pointRow.append(newPoints);
+        $("#userpoints").append(pointRow);
+      }
     }
-  }
 
 //Takes pick options and uploads attaches them to the username.
   $("#submitPicks").on("click", function(){
       submittedPicks = [];
       userPicks.submitPick(matches);
       userResults.compare();
-      userResults.printPoints();  
+      userResults.printPoints();
   });
 
 
