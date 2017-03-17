@@ -3,16 +3,14 @@
 //and takes the user's submitted picks and saves it to possibly push to firebase
 //It also works in place of the data pulled from the user's account to build
 //the web application while constructing user authentication.
-var matches = [];
-var pointCounter = 0;
-
 $(document).ready(function(){
   var fixtures = [];
   var database = firebase.database();
   var currentUserUid;
   var currentMatchDay = 29;
   var firebaseFixtures;
-  var userPicks;
+  var uidPicks;
+  var userPoints;
 
   //gathers fixture object from firebase
   firebase.database().ref("matchday-" + currentMatchDay).on("value", function(snapshot){
@@ -88,11 +86,12 @@ $(document).ready(function(){
 
         //pulls user uid allowing for unique information to be stored on firebase
         currentUserUid = firebase.auth().currentUser.uid;
-
+        /*if(currentUserPicks){
         firebase.database().ref("picks/matchday"+currentMatchDay+"/"+currentUserUid).on("value", function(snapshot){
           uidPicks = snapshot.val().userPicks;
           console.log(uidPicks);
         });
+      }*/
 
         //panelGen.createPanel(panelTitle, bodyId, parentDiv)
         panelGen.createPanel("Fixtures for matchday: " + currentMatchDay, "userPickPanel", $("#picksPanel"));
@@ -312,6 +311,10 @@ $(document).ready(function(){
       }
 
       writeUserPicks(currentUserUid, submittedPicks);
+      firebase.database().ref("picks/matchday"+currentMatchDay+"/"+currentUserUid).on("value", function(snapshot){
+        uidPicks = snapshot.val().userPicks;
+        console.log(uidPicks);
+      });
       return;
     }
   }
@@ -363,13 +366,36 @@ $(document).ready(function(){
   }
 
   var userResults = {
+    matches: [],
     //This compares the user's choices with that the actual results
-    compare: function(){
-        for(var i = 0; i < matches.length; i++){
-          if(matches[i] == "POSTPONED"){
+    compare: function(matchesArray, uidPicks){
+
+      if(userPoints){
+        for(var i = 0; i < matchesArray.length; i++){
+          console.log("userPoints exists in the loop")
+          if(matchesArray[i] == "POSTPONED"){
           }
-          if(matches[i] == submittedPicks[i]){
-            if(matches[i] == "Draw"){
+          else if(matchesArray[i] === uidPicks[i].matchPick){
+            if(matches[i] === "Draw"){
+              userPoints++;
+            }
+            else{
+              userPoints += 3;
+            }
+          }
+        }
+        firebase.database().ref("points/"+currentUserUid).set({
+          userPoints: userPoints
+        })
+      }
+      else{
+        var pointCounter = 0;
+        for(var i = 0; i < matchesArray.length; i++){
+          console.log("userPoints does not exist, in the loop")
+          if(matchesArray[i] == "POSTPONED"){
+          }
+          if(matchesArray[i] === uidPicks[i]){
+            if(matches[i] === "Draw"){
               pointCounter++;
             }
             else{
@@ -377,21 +403,55 @@ $(document).ready(function(){
             }
           }
         }
+        userPoints = pointCounter;
+        firebase.database().ref("points/"+currentUserUid).set({
+        userPoints: pointCounter
+        })
+      }
+    },
+
+    gamesFinished: function(fixtureArray){
+      //Run through fixtures array to check results
+      for(var i = 0; i < fixtureArray.length; i++){
+        //If the game is finished
+        if(fixtureArray[i].status === "FINISHED"){
+            if(fixtureArray[i].result.goalsAwayTeam > fixtureArray[i].result.goalsHomeTeam){
+              userResults.matches.push(fixtures[i].awayTeamName);
+            }
+            else if(fixtureArray[i].result.goalsAwayTeam < fixtureArray[i].result.goalsHomeTeam){
+              userResults.matches.push(fixtures[i].homeTeamName);
+            }
+            else if(fixtureArray[i].result.goalsAwayTeam == fixtureArray[i].result.goalsHomeTeam){
+              userResults.matches.push("Draw");
+            }
+        }
+        else if(fixtureArray[i].status === "POSTPONED"){
+          userResults.matches.push("POSTPONED");
+        }
+        else if(fixtureArray[i].status === "TIMED"){
+          userResults.matches.push("TIMED");
+        }
+      }
+      return;
     },
     //This prints the points to HTML
     printPoints: function(){
-      pointRow = $("<tr>");
-      var newPoints = $("<td>");
-      newPoints.html("<span><H3>" + pointCounter + "</H3></span>");
-      pointRow.append(newPoints);
-      $("#userpoints").append(pointRow);
+      $("#userPointsDiv").empty();
+      //panelGen.createPanel(panelTitle, bodyId, parentDiv)
+      panelGen.createPanel("User Points:", "pointsPanel", $("#userPointsDiv"));
+
+      var newPoints = $("<div>");
+      newPoints.html("<span><H3>" + userPoints + "</H3></span>");
+      $("#pointsPanel").append(newPoints);
+      return;
     }
   }
 
 //Takes pick options and uploads attaches them to the username.
   $(document).on("click", "#submitPicks", function(){
       userPicks.submitPick(firebaseFixtures);
-      userResults.compare();
+      userResults.gamesFinished(firebaseFixtures);
+      userResults.compare(userResults.matches, uidPicks);
       userResults.printPoints();
   });
 
@@ -466,27 +526,6 @@ $(document).ready(function(){
         //gamesFinished(response.fixtures);
       matchResults.printResults(response.fixtures);*/
 
-
-function gamesFinished (fixtures){
-  //Run through fixtures array to check results
-  for(var i = 0; i < fixtures.length; i++){
-    //If the game is finished
-    if(fixtures[i].status === "FINISHED"){
-        if(fixtures[i].result.goalsAwayTeam > fixtures[i].result.goalsHomeTeam){
-          matches.push(fixtures[i].awayTeamName);
-        }
-        if(fixtures[i].result.goalsAwayTeam < fixtures[i].result.goalsHomeTeam){
-          matches.push(fixtures[i].homeTeamName);
-        }
-        if(fixtures[i].result.goalsAwayTeam == fixtures[i].result.goalsHomeTeam){
-          matches.push("Draw");
-        }
-    }
-    if(fixtures[i].status === "POSTPONED"){
-          matches.push("POSTPONED");
-    }
-  }
-}
 /*Competition # and corresponding league
   2016/2017 season
   426: Premier League
