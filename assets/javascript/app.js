@@ -4,18 +4,32 @@
 //It also works in place of the data pulled from the user's account to build
 //the web application while constructing user authentication.
 $(document).ready(function(){
+  //this array is the array of fixtures pulled from API
   var fixtures = [];
-  var database = firebase.database();
+
+  //When a user is logged in, this variable is filled with their unique UID
   var currentUserUid;
+
+  //default Matchday is 29.
   var currentMatchDay = 29;
+
+  //This stores the fixtures for a given week as they are taken from firebase
   var firebaseFixtures;
+
+  //pulled from Firebase, determines if a user has made picks
+  var madePicks;
+
+  //Holds the users picks for a given weeks fixtures
   var uidPicks;
+
+  //Holds the points for a given user
   var userPoints;
 
-  //gathers fixture object from firebase
+  //gathers fixture object from firebase and updates each time API is called
   firebase.database().ref("matchday-" + currentMatchDay).on("value", function(snapshot){
     firebaseFixtures = snapshot.val().fixtures;
   });
+
   //function takes User information and puts onto firebase
   function writeUserData(userId, name, email) {
     firebase.database().ref('users/' + userId).set({
@@ -54,6 +68,10 @@ $(document).ready(function(){
      var userId = firebase.auth().currentUser.uid;
      //writeUserData(userId, name, email)
      writeUserData(userId, userName, email);
+
+     firebase.database().ref("has_made_picks/"+userId).set({
+       madePicks: false
+     })
    })
   });
 
@@ -72,10 +90,39 @@ $(document).ready(function(){
    });
 
    //logs the current user out of firebase
+   //resets user uid, user picks, and points
    $(document).on("click", "#logOutBtn", e =>{
      currentUserUid = "";
+     uidPicks= [];
+     userPoints= 0;
+     madePicks = false;
      firebase.auth().signOut();
-   })
+   });
+
+   $(document).on("click", "#signUpBtn", function(){
+     //prevents default and empties div to replace with sign up form
+    event.preventDefault();
+     $("#picksPanel").empty();
+
+     //panelGen.createPanel(panelTitle, bodyId, parentDiv)
+     panelGen.createPanel("Please Sign In", "signInPanel", $("#picksPanel"));
+
+     //formGen.createForm(parentPanel, formId)
+     formGen.createForm($("#signInPanel"), "signInForm");
+
+     //formGen.formGroup(inputId, formText, type, parentForm)
+     formGen.formGroup("nameInput", "User Name", "text", $("#signInForm"));
+     formGen.formGroup("emailInput", "Email", "email", $("#signInForm"));
+     formGen.formGroup("passwordInput", "Password", "password", $("#signInForm"));
+
+     //formGen.createSubmitBtn(btnId, btnText, parentForm)
+     formGen.createSubmitBtn("newUserSubmit", "Submit", $("#signInForm"));
+   });
+
+   $(document).on("click", "#newUserSubmit", function(){
+     event.preventDefault();
+     //if user Sign in happens the auth state change function triggers
+   });
 
    //This listens for auth state changes and displays accordingly
    firebase.auth().onAuthStateChanged(firebaseUser => {
@@ -86,12 +133,11 @@ $(document).ready(function(){
 
         //pulls user uid allowing for unique information to be stored on firebase
         currentUserUid = firebase.auth().currentUser.uid;
-        /*if(currentUserPicks){
-        firebase.database().ref("picks/matchday"+currentMatchDay+"/"+currentUserUid).on("value", function(snapshot){
-          uidPicks = snapshot.val().userPicks;
-          console.log(uidPicks);
-        });
-      }*/
+
+        firebase.database().ref("has_made_picks/"+ currentUserUid).on("value", function(snapshot){
+          madePicks = snapshot.val().madePicks
+        })
+
 
         //panelGen.createPanel(panelTitle, bodyId, parentDiv)
         panelGen.createPanel("Fixtures for matchday: " + currentMatchDay, "userPickPanel", $("#picksPanel"));
@@ -103,9 +149,18 @@ $(document).ready(function(){
 
         //generates the radiobuttons allowing for user picks
         if(firebaseFixtures){
+          //if fixtures exist on firebase, they are pulled printed
           userPicks.printPicks(firebaseFixtures);
+          if(madePicks){
+            firebase.database().ref("picks/matchday"+currentMatchDay+"/"+currentUserUid).on("value", function(snapshot){
+              userResults.gamesFinished(firebaseFixtures);
+              userResults.compare(userResults.matches, snapshot.val().userPicks);
+              userResults.printPoints();
+            });
+          }
         }
         else{
+          //if fixtures do not exist on firebase, the AJAx is called and they are printed from there
           $.ajax({
             headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
             url: 'http://api.football-data.org/v1/competitions/426/leagueTable',
@@ -125,16 +180,26 @@ $(document).ready(function(){
                   fixtures
                 });
                 userPicks.printPicks(fixtures);
+
+                if(madePicks){
+                  firebase.database().ref("picks/matchday"+currentMatchDay+"/"+currentUserUid).on("value", function(snapshot){
+                    userResults.gamesFinished(fixtures);
+                    userResults.compare(userResults.matches, snapshot.val().userPicks);
+                    userResults.printPoints();
+                  });
+                }
               });
             });
         }
 
+        //submit picks button is printed if user is logged in
         var submitPicksBtn = $("<button>");
         submitPicksBtn.addClass("btn btn-primary btn-lg");
         submitPicksBtn.attr("id", "submitPicks");
         submitPicksBtn.html("Submit");
         $("#userPickPanel").append(submitPicksBtn).append(" ");
 
+        //users also have the option of logging out.
         var logOut = $("<button>");
         logOut.addClass("btn btn-secondary btn-lg");
         logOut.attr("id", "logOutBtn");
@@ -168,32 +233,9 @@ $(document).ready(function(){
        signUp.html("Sign Up");
        $("#signInForm").append(signUp);
      }
+
    });
 
-     $(document).on("click", "#signUpBtn", function(){
-       //prevents default and empties div to replace with sign up form
-      event.preventDefault();
-       $("#picksPanel").empty();
-
-       //panelGen.createPanel(panelTitle, bodyId, parentDiv)
-       panelGen.createPanel("Please Sign In", "signInPanel", $("#picksPanel"));
-
-       //formGen.createForm(parentPanel, formId)
-       formGen.createForm($("#signInPanel"), "signInForm");
-
-       //formGen.formGroup(inputId, formText, type, parentForm)
-       formGen.formGroup("nameInput", "User Name", "text", $("#signInForm"));
-       formGen.formGroup("emailInput", "Email", "email", $("#signInForm"));
-       formGen.formGroup("passwordInput", "Password", "password", $("#signInForm"));
-
-       //formGen.createSubmitBtn(btnId, btnText, parentForm)
-       formGen.createSubmitBtn("newUserSubmit", "Submit", $("#signInForm"));
-     });
-
-     $(document).on("click", "#newUserSubmit", function(){
-       event.preventDefault();
-       //if user Sign in happens the auth state change function triggers
-     });
       //fixtureGen object contains all the functions used for generating the table of fixtures
   var fixtureGen = {
     matchRow: "",
@@ -311,6 +353,9 @@ $(document).ready(function(){
       }
 
       writeUserPicks(currentUserUid, submittedPicks);
+      firebase.database().ref("has_made_picks/"+currentUserUid).set({
+        madePicks: true
+      })
       firebase.database().ref("picks/matchday"+currentMatchDay+"/"+currentUserUid).on("value", function(snapshot){
         uidPicks = snapshot.val().userPicks;
         console.log(uidPicks);
@@ -368,14 +413,14 @@ $(document).ready(function(){
   var userResults = {
     matches: [],
     //This compares the user's choices with that the actual results
-    compare: function(matchesArray, uidPicks){
-
+    compare: function(matchesArray, userUidPicks){
+      console.log(userUidPicks);
       if(userPoints){
         for(var i = 0; i < matchesArray.length; i++){
           console.log("userPoints exists in the loop")
           if(matchesArray[i] == "POSTPONED"){
           }
-          else if(matchesArray[i] === uidPicks[i].matchPick){
+          else if(matchesArray[i] === userUidPicks[i].matchPick){
             if(matches[i] === "Draw"){
               userPoints++;
             }
@@ -390,12 +435,11 @@ $(document).ready(function(){
       }
       else{
         var pointCounter = 0;
-        for(var i = 0; i < matchesArray.length; i++){
-          console.log("userPoints does not exist, in the loop")
+        for(var i = 0; i < matchesArray.length; i++){;
           if(matchesArray[i] == "POSTPONED"){
           }
-          if(matchesArray[i] === uidPicks[i]){
-            if(matches[i] === "Draw"){
+          if(matchesArray[i] == userUidPicks[i].matchPick){
+            if(matches[i] == "Draw"){
               pointCounter++;
             }
             else{
@@ -449,10 +493,8 @@ $(document).ready(function(){
 
 //Takes pick options and uploads attaches them to the username.
   $(document).on("click", "#submitPicks", function(){
+    event.preventDefault();
       userPicks.submitPick(firebaseFixtures);
-      userResults.gamesFinished(firebaseFixtures);
-      userResults.compare(userResults.matches, uidPicks);
-      userResults.printPoints();
   });
 
 
