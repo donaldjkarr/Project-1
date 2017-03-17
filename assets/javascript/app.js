@@ -12,13 +12,12 @@ $(document).ready(function(){
   var currentUserUid;
   var currentMatchDay = 29;
   var firebaseFixtures;
+  var userPicks;
 
   //gathers fixture object from firebase
   firebase.database().ref("matchday-" + currentMatchDay).on("value", function(snapshot){
     firebaseFixtures = snapshot.val().fixtures;
-    console.log(firebaseFixtures);
   });
-
   //function takes User information and puts onto firebase
   function writeUserData(userId, name, email) {
     firebase.database().ref('users/' + userId).set({
@@ -84,13 +83,19 @@ $(document).ready(function(){
    firebase.auth().onAuthStateChanged(firebaseUser => {
      //if user is logged in this triggers
      if(firebaseUser){
+
          $("#picksPanel").empty();
 
         //pulls user uid allowing for unique information to be stored on firebase
         currentUserUid = firebase.auth().currentUser.uid;
 
+        firebase.database().ref("picks/matchday"+currentMatchDay+"/"+currentUserUid).on("value", function(snapshot){
+          uidPicks = snapshot.val().userPicks;
+          console.log(uidPicks);
+        });
+
         //panelGen.createPanel(panelTitle, bodyId, parentDiv)
-        panelGen.createPanel("Fixtures", "userPickPanel", $("#picksPanel"));
+        panelGen.createPanel("Fixtures for matchday: " + currentMatchDay, "userPickPanel", $("#picksPanel"));
 
         //tableGen.createTable(tableId, parentPanel);
         tableGen.createTable("picksTable", $("#userPickPanel"));
@@ -264,6 +269,8 @@ $(document).ready(function(){
 
   var userPicks = {
     printPicks: function(matchArray){
+      //createForm: function(parentPanel, formId)
+      formGen.createForm($("#userPickPanel"), "radioChoices");
       //for each fixture prints into a table row before appending new row
       for(var i =0; i < matchArray.length; i++){
         userPicks.addPick(matchArray[i], i);
@@ -275,21 +282,21 @@ $(document).ready(function(){
       var pickRow = $("<tr>");
       var newPick = $("<td>");
 
-       var homeTeam = $("<span>");
-       homeTeam.html(arrayInput.homeTeamName + " <input type='radio'  data-match=" + data + " value='" + arrayInput.homeTeamName + "'>  ");
-       newPick.append(homeTeam);
+      var homeTeam = $("<span>");
+      homeTeam.html(arrayInput.homeTeamName + " <input type='radio' name=matchNum:"+ data+" data-match=" + data + " value='" + arrayInput.homeTeamName + "'>  ");
+      newPick.append(homeTeam);
 
-       var awayTeam = $("<span>");
-       awayTeam.html(arrayInput.awayTeamName + " <input type='radio' data-match=" + data + " value='" + arrayInput.awayTeamName + "'>  ");
-       newPick.append(awayTeam);
+      var awayTeam = $("<span>");
+      awayTeam.html(arrayInput.awayTeamName + " <input type='radio' name=matchNum:"+ data+" data-match=" + data + " value='" + arrayInput.awayTeamName + "'>  ");
+      newPick.append(awayTeam);
 
-       var draw = $("<span>");
-       draw.html("Draw <input type='radio' data-match=" + data + " value='Draw'>");
-       newPick.append(draw);
+      var draw = $("<span>");
+      draw.html("Draw <input type='radio' name=matchNum:"+ data+" data-match=" + data + " value='Draw'>");
+      newPick.append(draw);
 
-       pickRow.append(newPick);
+      pickRow.append(newPick);
       $("#userFixtures").append(pickRow);
-      return;
+    return;
     },
 
     submitPick: function(matchArray){
@@ -305,34 +312,54 @@ $(document).ready(function(){
       }
 
       writeUserPicks(currentUserUid, submittedPicks);
-
       return;
     }
   }
 
   var matchResults = {
     printResults: function (matchArray){
+      //panelGen.createPanel(panelTitle, bodyId, parentDiv)
+      panelGen.createPanel("Results for matchday: " + matchArray[0].matchday, "resultsPanel", $("#finalResults"));
+
+      //tableGen.createTable(tableId, parentPanel);
+      tableGen.createTable("resultsTable", $("#resultsPanel"));
+      //tableGen.tableBody(bodyId, parentTable);
+      tableGen.tableBody("fixtureResults", $("#resultsTable"));
+
+      //generates the radiobuttons allowing for user picks
         $("#finalresults").html("Matchday " + matchArray[0].matchday + " Results");
         for(var i = 0; i <matchArray.length; i++){
             matchResults.addResult(matchArray[i], i);
-
         }
     },
     addResult: function(arrayInput, data){
       resultRow = $("<tr>");
       var newResult = $("<td>");
       if(arrayInput.status == "POSTPONED"){
-        newResult.html("<span> POSTPONED </span>");
+        newResult.html("<span>PPD: " + arrayInput.homeTeamName + " VS "+ arrayInput.awayTeamName + "</span>");
         resultRow.append(newResult);
-        $("#final").append(resultRow);
+        $("#fixtureResults").append(resultRow);
+      }
+      else if(arrayInput.status === "FINISHED"){
+        newResult.html("<span>FT: "+arrayInput.homeTeamName + " <b>" + arrayInput.result.goalsHomeTeam + "</b> VS "+ arrayInput.awayTeamName + "  <b>" + arrayInput.result.goalsAwayTeam + "</b></span>");
+        resultRow.append(newResult);
+        $("#fixtureResults").append(resultRow);
       }
       else{
-        newResult.html("<span>"+arrayInput.homeTeamName + " " + arrayInput.result.goalsHomeTeam + " VS "+ arrayInput.awayTeamName + " " + arrayInput.result.goalsAwayTeam + "</span>");
+        newResult.html("<span>"+ arrayInput.homeTeamName + " VS "+ arrayInput.awayTeamName + "</span>");
         resultRow.append(newResult);
-        $("#final").append(resultRow);
+        $("#fixtureResults").append(resultRow);
       }
     },
-
+    matchCheck: function(matchArray){
+      var weekStarted = false;
+      for(var i = 0; i <matchArray.length; i++){
+        if(matchArray[i].status === "FINISHED"){
+          weekStarted = true;
+        }
+      }
+      return weekStarted;
+    }
   }
 
   var userResults = {
@@ -374,14 +401,14 @@ $(document).ready(function(){
     //This actually calls object and object runs functions
 
   //API call to obtain the league table
-  /*$.ajax({
+  $.ajax({
     headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
     url: 'http://api.football-data.org/v1/competitions/426/leagueTable',
     dataType: 'json',
     type: 'GET',
   }).done(function(response) {
-    console.log(response);
       currentMatchDay = response.matchday;
+      var previousMatchDay = response.matchday - 1;
   //  tableGen.createStandings(response);
       $.ajax({
 	       headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
@@ -389,15 +416,26 @@ $(document).ready(function(){
 	       dataType: 'json',
 	       type: 'GET',
 	    }).done(function(response) {
-        console.log(response);
+          fixtures = response.fixtures;
+          firebase.database().ref("matchday-" + currentMatchDay+"/").set({
+            fixtures
+          });
+          if(matchResults.matchCheck(fixtures)){
+            matchResults.printResults(fixtures);
+          }
+          else{
+            $.ajax({
+              headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
+              url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=' + previousMatchDay,
+              dataType: 'json',
+              type: 'GET',
+            }).done(function(response) {
+              matchResults.printResults(response.fixtures);
+            });
+          }
+        });
 
-        fixtures = response.fixtures;
-
-        firebase.database().ref("matchday-" + currentMatchDay+"/").set({
-          fixtures
-        })
-      });
-    });*/
+    });
 
         /*$("#picksPanel").empty();
        currentUserUid = firebase.auth().currentUser.uid;
