@@ -5,14 +5,35 @@ $(document).ready(function(){
   //When a user is logged in, this variable is filled with their unique UID
   var currentUserUid;
 
+
+$(document).ready(function(){
+  /*var config = {
+      apiKey: "AIzaSyDsSl_sMP6qnwW8Wun2VkagkB5Xtv5B7A4",
+      authDomain: "project-1-60d84.firebaseapp.com",
+      databaseURL: "https://project-1-60d84.firebaseio.com",
+      storageBucket: "project-1-60d84.appspot.com",
+      messagingSenderId: "1033595008210"
+    };
+    firebase.initializeApp(config);*/
+      //fixtureGen object contains all the functions used for generating the table of fixtures
+  var fixtureGen = {
+    matchRow: "",
+
+    //1/2 functions that print fixtures
+    printMatches: function(matchArray){
+      //takes matchDay from the JSOn object and prints it into header
+      $("#matchDay").html("Matchday: " + matchArray[0].matchday);
+
   //default Matchday is 29.
   var currentMatchDay = 29;
 
   //This stores the fixtures for a given week as they are taken from firebase
   var firebaseFixtures;
 
+
   //pulled from Firebase, determines if a user has made picks
   var madePicks;
+
 
 
   //Holds the users picks for a given weeks fixtures
@@ -384,6 +405,7 @@ $(document).ready(function(){
             }
           }
         }
+
         userPoints = pointCounter;
         firebase.database().ref("points/"+currentUserUid).set({
         userPoints: pointCounter
@@ -426,10 +448,12 @@ $(document).ready(function(){
       $("#pointsPanel").append(newPoints);
       return;
 
+
     }
   }
 
 //Takes pick options and uploads attaches them to the username.
+
   $(document).on("click", "#submitPicks", function(){
     event.preventDefault();
       userChoice.submitPick(firebaseFixtures);

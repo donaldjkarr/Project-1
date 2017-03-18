@@ -13,6 +13,12 @@ body {
     margin-right:130px;
 }
 
+#appname{
+    float:right;
+    color:white;
+    margin-right:130px;
+}
+
 .navbar-fixed-top .nav {
     padding: 15px 0;
 }
