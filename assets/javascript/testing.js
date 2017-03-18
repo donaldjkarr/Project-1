@@ -21,7 +21,6 @@ $(document).ready(function(){
   //Holds the points for a given user
   var userPoints;
 
-  var weekStarted = false;
   //gathers fixture object from firebase and updates each time API is called
   firebase.database().ref("matchday-" + currentMatchDay).on("value", function(snapshot){
     firebaseFixtures = snapshot.val().fixtures;
@@ -89,7 +88,6 @@ $(document).ready(function(){
    //logs the current user out of firebase
    //resets user uid, user picks, and points
    $(document).on("click", "#logOutBtn", e =>{
-     event.preventDefault();
      currentUserUid = "";
      uidPicks= [];
      userPoints= 0;
@@ -174,7 +172,7 @@ $(document).ready(function(){
           //  tableGen.createStandings(response);
               $.ajax({
                  headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-                 url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=' + currentMatchDay,
+                 url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
                  dataType: 'json',
                  type: 'GET',
               }).done(function(response) {
@@ -336,13 +334,13 @@ $(document).ready(function(){
       }
     },
     matchCheck: function(matchArray){
-      weekStarted = false;
+      var weekStarted = false;
       for(var i = 0; i <matchArray.length; i++){
         if(matchArray[i].status === "FINISHED"){
           weekStarted = true;
         }
       }
-      return;
+      return weekStarted;
     }
   }
 
@@ -452,7 +450,7 @@ $(document).ready(function(){
   //  tableGen.createStandings(response);
       $.ajax({
 	       headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-	       url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=' + currentMatchDay,
+	       url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
 	       dataType: 'json',
 	       type: 'GET',
 	    }).done(function(response) {
@@ -460,14 +458,13 @@ $(document).ready(function(){
           firebase.database().ref("matchday-" + currentMatchDay+"/").set({
             fixtures
           });
-          matchResults.matchCheck(fixtures);
-          if(weekStarted){
+          if(matchResults.matchCheck(fixtures)){
             matchResults.printResults(fixtures);
           }
           else{
             $.ajax({
               headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-              url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=' + previousMatchDay,
+              url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
               dataType: 'json',
               type: 'GET',
             }).done(function(response) {
