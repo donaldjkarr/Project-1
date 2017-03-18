@@ -152,12 +152,12 @@
 
         </div>
 <!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" id="clickME" data-toggle="modal" data-target="#exampleModal">
+<button type="button" class="btn btn-primary" id="clickME" data-toggle="modal" data-target="#myModal">
   Launch demo modal
 </button>
 
 <!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" data-toggle="modal" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -167,7 +167,7 @@
         </button>
       </div>
       <div class="modal-body">
-        ...
+        FUCKER WORK >:-(
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -179,9 +179,23 @@
     </div>
     <!-- /.container -->
 
-    <script src="https://www.gstatic.com/firebasejs/3.7.0/firebase.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/3.7.2/firebase.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyDsSl_sMP6qnwW8Wun2VkagkB5Xtv5B7A4",
+            authDomain: "project-1-60d84.firebaseapp.com",
+            databaseURL: "https://project-1-60d84.firebaseio.com",
+            storageBucket: "project-1-60d84.appspot.com",
+            messagingSenderId: "1033595008210"
+        };
+        firebase.initializeApp(config);
+    </script>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
     <script src="assets/javascript/app.js"></script>
+    <script src="assets/javascript/sign_in.js"></script>
+
 </body>
 
 </html>

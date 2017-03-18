@@ -1,15 +1,15 @@
 $(document).ready(function(){
   //initial configuration for firebase
-  var config = {
+  /*var config = {
     apiKey: "AIzaSyDsSl_sMP6qnwW8Wun2VkagkB5Xtv5B7A4",
     authDomain: "project-1-60d84.firebaseapp.com",
     databaseURL: "https://project-1-60d84.firebaseio.com",
     storageBucket: "project-1-60d84.appspot.com",
     messagingSenderId: "1033595008210"
-  };
+  };*/
 
 
-  firebase.initializeApp(config);
+  //firebase.initializeApp(config);
   var database = firebase.database();
   var currentUserUid;
 

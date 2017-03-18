@@ -8,15 +8,14 @@ var submittedPicks = [];
 var pointCounter = 0;
 
 $(document).ready(function(){
-
-  var config = {
+  /*var config = {
       apiKey: "AIzaSyDsSl_sMP6qnwW8Wun2VkagkB5Xtv5B7A4",
       authDomain: "project-1-60d84.firebaseapp.com",
       databaseURL: "https://project-1-60d84.firebaseio.com",
       storageBucket: "project-1-60d84.appspot.com",
       messagingSenderId: "1033595008210"
     };
-    firebase.initializeApp(config);
+    firebase.initializeApp(config);*/
       //fixtureGen object contains all the functions used for generating the table of fixtures
   var fixtureGen = {
     matchRow: "",
@@ -39,7 +38,6 @@ $(document).ready(function(){
       matchRow = $("<tr>");
       newFixture = $("<td>");
       newFixture.html("<span data-game="+ data +"-H>"+ arrayInput.homeTeamName +"</span> vs <span data-game="+ data +"-A>" + arrayInput.awayTeamName + "</span>");
-      
       matchRow.append(newFixture);
       $("#fixtures").append(matchRow);
       return;
@@ -165,8 +163,7 @@ $(document).ready(function(){
             }
           }
         }
-      userResults.printPoints();
-    },
+      },
     //This prints the points to HTML
     printPoints: function(){
       pointRow = $("<tr>");
@@ -174,6 +171,10 @@ $(document).ready(function(){
       newPoints.html("<span><H3>" + pointCounter + "</H3></span>");
       pointRow.append(newPoints);
       $("#userpoints").append(pointRow);
+    },
+    clear: function(){
+      $("#userpoints").empty();
+      pointCounter = 0;
     }
   }
 
@@ -181,6 +182,7 @@ $(document).ready(function(){
   $("#submitPicks").on("click", function(){
       submittedPicks = [];
       userPicks.submitPick(matches);
+      userResults.clear();
       userResults.compare();
       userResults.printPoints();  
   });
@@ -214,6 +216,38 @@ $(document).ready(function(){
   });
 
 
+  var queryURL = "http:///w.api.php?action=query&format=json&prop=extracts&titles=Manchester%20City&exintro=1";
+  $.ajax({
+    url: "https://en.wikipedia.org/w/api.php?action=query&titles=Main%20Page&prop=revisions&rvprop=content&format=json",
+    method: "GET",
+    contentType: 'text/plain',
+    xhrFields: {
+      withCredentials: true
+    },
+    headers: {
+      success:function(){
+        console.log("It worked!");
+      },
+      error: function(){
+        console.log("Something went wrong");
+      }
+    }.done(function(response){
+      console.log(response);
+    })
+  });
+
+
+
+
+  /*var queryURL = "https://en.wikipedia.org/w/api.php?action=query&titles=San%20Francisco&prop=revisions&rvprop=content&format=json";
+  //API call to obtain team background through wikipedia
+  $.ajax({
+    url: queryURL,
+    type: 'GET',
+  }).done(function(response){
+    console.log("WIKI API CALL RESPONSE: "+ response);
+  });*/
+
 function gamesFinished (fixtures){
   //Check variable
   console.log("GAMES FINISHED:  " + fixtures);
@@ -222,6 +256,10 @@ function gamesFinished (fixtures){
     //If the game is finished
     console.log(fixtures[i].status);
     if(fixtures[i].status === "FINISHED"){
+
+        if(fixtures[i].result.goalsAwayTeam == null){
+          matches.push("The game between" + fixtures[i].awayTeamName + " and " + fixtures[i].homeTeamName + " has not yet been played!");
+        }
         if(fixtures[i].result.goalsAwayTeam > fixtures[i].result.goalsHomeTeam){
           matches.push(fixtures[i].awayTeamName);
         }
