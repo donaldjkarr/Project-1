@@ -21,6 +21,7 @@ $(document).ready(function(){
   //Holds the points for a given user
   var userPoints;
 
+  var weekStarted = false;
   //gathers fixture object from firebase and updates each time API is called
   firebase.database().ref("matchday-" + currentMatchDay).on("value", function(snapshot){
     firebaseFixtures = snapshot.val().fixtures;
@@ -131,9 +132,7 @@ $(document).ready(function(){
 
         //pulls user uid allowing for unique information to be stored on firebase
         currentUserUid = firebase.auth().currentUser.uid;
-//TODO
-//TODO
-//TODO this doesnt work and produces an error with a new user, maybe cant use false
+
         firebase.database().ref("has_made_picks/"+ currentUserUid).on("value", function(snapshot){
           madePicks = snapshot.val().madePicks
         })
@@ -458,10 +457,11 @@ $(document).ready(function(){
           firebase.database().ref("matchday-" + currentMatchDay+"/").set({
             fixtures
           });
-          if(matchResults.matchCheck(fixtures)){
+        /*matchResults.matchCheck(fixtures);
+          if(weekStarted){
             matchResults.printResults(fixtures);
           }
-          else{
+          else{*/
             $.ajax({
               headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
               url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
@@ -470,7 +470,7 @@ $(document).ready(function(){
             }).done(function(response) {
               matchResults.printResults(response.fixtures);
             });
-          }
+        //  }
         });
 
     });
