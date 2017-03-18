@@ -163,7 +163,7 @@ $(document).ready(function(){
           //if fixtures do not exist on firebase, the AJAx is called and they are printed from there
           $.ajax({
             headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-            url: 'http://api.football-data.org/v1/competitions/426/leagueTable',
+            url: 'https://api.football-data.org/v1/competitions/426/leagueTable',
             dataType: 'json',
             type: 'GET',
           }).done(function(response) {
@@ -171,7 +171,7 @@ $(document).ready(function(){
           //  tableGen.createStandings(response);
               $.ajax({
                  headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-                 url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
+                 url: 'https://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
                  dataType: 'json',
                  type: 'GET',
               }).done(function(response) {
@@ -440,7 +440,7 @@ $(document).ready(function(){
   //API call to obtain the league table
   $.ajax({
     headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-    url: 'http://api.football-data.org/v1/competitions/426/leagueTable',
+    url: 'https://api.football-data.org/v1/competitions/426/leagueTable',
     dataType: 'json',
     type: 'GET',
   }).done(function(response) {
@@ -449,7 +449,7 @@ $(document).ready(function(){
   //  tableGen.createStandings(response);
       $.ajax({
 	       headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-	       url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
+	       url: 'https://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
 	       dataType: 'json',
 	       type: 'GET',
 	    }).done(function(response) {

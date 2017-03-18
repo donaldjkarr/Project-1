@@ -128,7 +128,7 @@ var matchResults = {
 
   $.ajax({
     headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-    url: 'http://api.football-data.org/v1/competitions/426/leagueTable',
+    url: 'https://api.football-data.org/v1/competitions/426/leagueTable',
     dataType: 'json',
     type: 'GET',
   }).done(function(response) {
@@ -138,7 +138,7 @@ var matchResults = {
 
       $.ajax({
         headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-        url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=' + currentMatchDay,
+        url: 'https://api.football-data.org/v1/competitions/426/fixtures?matchday=' + currentMatchDay,
         dataType: 'json',
         type: 'GET',
       }).done(function(response) {
@@ -148,7 +148,7 @@ var matchResults = {
 
       $.ajax({
         headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-        url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=' + previousMatchDay,
+        url: 'https://api.football-data.org/v1/competitions/426/fixtures?matchday=' + previousMatchDay,
         dataType: 'json',
         type: 'GET',
       }).done(function(response) {
