@@ -216,7 +216,7 @@ $(document).ready(function(){
   });
 
 
-  var queryURL = "http:///w.api.php?action=query&format=json&prop=extracts&titles=Manchester%20City&exintro=1";
+  /*var queryURL = "http:///w.api.php?action=query&format=json&prop=extracts&titles=Manchester%20City&exintro=1";
   $.ajax({
     url: "https://en.wikipedia.org/w/api.php?action=query&titles=Main%20Page&prop=revisions&rvprop=content&format=json",
     method: "GET",
@@ -234,7 +234,7 @@ $(document).ready(function(){
     }.done(function(response){
       console.log(response);
     })
-  });
+  });*/
 
 
 
@@ -276,6 +276,51 @@ function gamesFinished (fixtures){
       console.log(matches);
   }
 }
+
+//API call to grab youtube video for embedded play!**********************
+
+// 2. This code loads the IFrame Player API code asynchronously.
+      var tag = document.createElement('script');
+
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      // 3. This function creates an <iframe> (and YouTube player)
+      //    after the API code downloads.
+      var player;
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+          height: '390',
+          width: '640',
+          videoId: 'M7lc1UVf-VE',
+          events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+          }
+        });
+      }
+
+      // 4. The API will call this function when the video player is ready.
+      function onPlayerReady(event) {
+        event.target.playVideo();
+      }
+
+      // 5. The API calls this function when the player's state changes.
+      //    The function indicates that when playing a video (state=1),
+      //    the player should play for six seconds and then stop.
+      var done = false;
+      function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.PLAYING && !done) {
+          setTimeout(stopVideo, 6000);
+          done = true;
+        }
+      }
+      function stopVideo() {
+        player.stopVideo();
+      }
+    //END EMBEDDED PLAYBACK***************************************
+
 /*Competition # and corresponding league
   2016/2017 season
   426: Premier League
