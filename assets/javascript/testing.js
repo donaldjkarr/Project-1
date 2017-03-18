@@ -464,7 +464,7 @@ $(document).ready(function(){
           else{*/
             $.ajax({
               headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
-              url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
+              url: 'https://api.football-data.org/v1/competitions/426/fixtures?matchday=28',
               dataType: 'json',
               type: 'GET',
             }).done(function(response) {
