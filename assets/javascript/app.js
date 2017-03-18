@@ -19,6 +19,7 @@ $(document).ready(function(){
   //pulled from Firebase, determines if a user has made picks
   var madePicks;
 
+
   //Holds the users picks for a given weeks fixtures
   var uidPicks;
 
@@ -272,6 +273,7 @@ $(document).ready(function(){
       draw.html("Draw <input type='radio' name=matchNum:"+ data+" data-match=" + data + " value='Draw'>");
       newPick.append(draw);
 
+
       pickRow.append(newPick);
       $("#userFixtures").append(pickRow);
     return;
@@ -348,6 +350,7 @@ $(document).ready(function(){
   }
 
   var userResults = {
+
     matches: [],
     //This compares the user's choices with that the actual results
     compare: function(matchesArray, uidPicks){
@@ -425,6 +428,7 @@ $(document).ready(function(){
       newPoints.html("<span><H3>" + userPoints + "</H3></span>");
       $("#pointsPanel").append(newPoints);
       return;
+
     }
   }
 
