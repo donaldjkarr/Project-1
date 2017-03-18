@@ -70,7 +70,7 @@ $(document).ready(function(){
      writeUserData(userId, userName, email);
 
      firebase.database().ref("has_made_picks/"+userId).set({
-       madePicks: false
+       madePicks: "no"
      })
    })
   });
@@ -95,7 +95,7 @@ $(document).ready(function(){
      currentUserUid = "";
      uidPicks= [];
      userPoints= 0;
-     madePicks = false;
+     madePicks = "no";
      firebase.auth().signOut();
    });
 
@@ -128,12 +128,16 @@ $(document).ready(function(){
    firebase.auth().onAuthStateChanged(firebaseUser => {
      //if user is logged in this triggers
      if(firebaseUser){
-
+       $("#userPointsDiv").empty();
+       //panelGen.createPanel(panelTitle, bodyId, parentDiv)
+       panelGen.createPanel("User Points:", "pointsPanel", $("#userPointsDiv"));
          $("#picksPanel").empty();
 
         //pulls user uid allowing for unique information to be stored on firebase
         currentUserUid = firebase.auth().currentUser.uid;
-
+//TODO
+//TODO
+//TODO this doesnt work and produces an error with a new user, maybe cant use false
         firebase.database().ref("has_made_picks/"+ currentUserUid).on("value", function(snapshot){
           madePicks = snapshot.val().madePicks
         })
@@ -150,11 +154,12 @@ $(document).ready(function(){
         //generates the radiobuttons allowing for user picks
         if(firebaseFixtures){
           //if fixtures exist on firebase, they are pulled printed
-          userPicks.printPicks(firebaseFixtures);
-          if(madePicks){
+          userChoice.printPicks(firebaseFixtures);
+          if(madePicks === "yes"){
             firebase.database().ref("picks/matchday"+currentMatchDay+"/"+currentUserUid).on("value", function(snapshot){
               userResults.gamesFinished(firebaseFixtures);
-              userResults.compare(userResults.matches, snapshot.val().userPicks);
+              uidPicks = snapshot.val().userPicks;
+              userResults.compare(userResults.matches, uidPicks);
               userResults.printPoints();
             });
           }
@@ -179,12 +184,13 @@ $(document).ready(function(){
                 firebase.database().ref("matchday-" + currentMatchDay+"/").set({
                   fixtures
                 });
-                userPicks.printPicks(fixtures);
+                userChoice.printPicks(fixtures);
 
-                if(madePicks){
+                if(madePicks === "yes"){
                   firebase.database().ref("picks/matchday"+currentMatchDay+"/"+currentUserUid).on("value", function(snapshot){
+                    uidPicks = snapshot.val().userPicks;
                     userResults.gamesFinished(fixtures);
-                    userResults.compare(userResults.matches, snapshot.val().userPicks);
+                    userResults.compare(userResults.matches, uidPicks);
                     userResults.printPoints();
                   });
                 }
@@ -208,6 +214,9 @@ $(document).ready(function(){
      }
      //else statement triggers when no one is logged in
      else{
+       $("#userPointsDiv").empty();
+       //panelGen.createPanel(panelTitle, bodyId, parentDiv)
+       panelGen.createPanel("User Points:", "pointsPanel", $("#userPointsDiv"));
        //follows the same format as above, if there is not user logged in, the table of all users prints. with log in/sign up options at the bottom
         $("#picksPanel").empty();
 
@@ -236,85 +245,13 @@ $(document).ready(function(){
 
    });
 
-      //fixtureGen object contains all the functions used for generating the table of fixtures
-  var fixtureGen = {
-    matchRow: "",
-
-    //1/2 functions that print fixtures
-    printMatches: function(matchArray){
-      //takes matchDay from the JSOn object and prints it into header
-      $("#matchDay").html("Matchday: " + matchArray[0].matchday);
-
-      //for each fixture prints into a table row before appending new row
-      for(var i =0; i < matchArray.length; i++){
-      fixtureGen.addMatch(matchArray[i], i );
-      $("#fixtures").append(matchRow);
-      }
-      return;
-    },
-
-    //2/2 functions that print fixtures
-    addMatch: function(arrayInput, data){
-      matchRow = $("<tr>");
-      newFixture = $("<td>");
-      newFixture.html("<span data-game="+ data +"-H>"+ arrayInput.homeTeamName +"</span> vs <span data-game="+ data +"-A>" + arrayInput.awayTeamName + "</span>");
-
-      matchRow.append(newFixture);
-      $("#fixtures").append(matchRow);
-      return;
-    }
-  }
-
-//tableGen object contains all the functions used to generate the league standings table
-  var tableGen = {
-    teamRow: "",
-    //1/3 functions used to create league standings table
-    createStandings: function(tableResponse){
-      //takes legue name from JSON object and prints it in table header
-      $("#leagueName").html(tableResponse.leagueCaption + "<br>Updated Through Matchday: " + tableResponse.matchday);
-
-      //for each team in the JSON object, for loop adds each element("wins, team name, etc) to a table row and appends the row to the table")
-        for(var i=0; i < tableResponse.standing.length; i ++){
-          teamRow = $("<tr>");
-
-          tableGen.teamAdd(tableResponse.standing[i], "position");
-          tableGen.teamAdd(tableResponse.standing[i], "teamName");
-          tableGen.teamAdd(tableResponse.standing[i], "playedGames");
-          tableGen.AddWDL(tableResponse.standing[i], "wins", "draws", "losses");
-          tableGen.teamAdd(tableResponse.standing[i], "goalDifference");
-          tableGen.teamAdd(tableResponse.standing[i], "points");
-
-           $("#teamInsert").append(teamRow);
-        }
-        return;
-    },
-
-    //2/3 functions used to create league standings table
-    //Adds a particular element to the table row. (first parameter takes the specific team, second is addition to the table)
-    teamAdd: function(team, addition){
-      var rowAddition = $("<td>");
-      rowAddition.html(team[addition]);
-      teamRow.append(rowAddition);
-      return;
-    },
-
-    //3/3 function used to create league standings table
-    //essentially the same as teamAdd(), has more parameters allowing all three parts of the object to be added to a single column of the table
-    AddWDL: function(team, wins, draws, losses){
-      var rowAddition = $("<td>");
-      rowAddition.html(team[wins] + "-" + team[draws] + "-" + team[losses]);
-      teamRow.append(rowAddition);
-      return;
-    }
-  }
-
-  var userPicks = {
+  var userChoice = {
     printPicks: function(matchArray){
       //createForm: function(parentPanel, formId)
       formGen.createForm($("#userPickPanel"), "radioChoices");
       //for each fixture prints into a table row before appending new row
       for(var i =0; i < matchArray.length; i++){
-        userPicks.addPick(matchArray[i], i);
+        userChoice.addPick(matchArray[i], i);
       }
       return;
     },
@@ -354,7 +291,7 @@ $(document).ready(function(){
 
       writeUserPicks(currentUserUid, submittedPicks);
       firebase.database().ref("has_made_picks/"+currentUserUid).set({
-        madePicks: true
+        madePicks: "yes"
       })
       firebase.database().ref("picks/matchday"+currentMatchDay+"/"+currentUserUid).on("value", function(snapshot){
         uidPicks = snapshot.val().userPicks;
@@ -413,14 +350,14 @@ $(document).ready(function(){
   var userResults = {
     matches: [],
     //This compares the user's choices with that the actual results
-    compare: function(matchesArray, userUidPicks){
-      console.log(userUidPicks);
+    compare: function(matchesArray, uidPicks){
+      console.log(uidPicks[1].matchPick);
       if(userPoints){
         for(var i = 0; i < matchesArray.length; i++){
           console.log("userPoints exists in the loop")
           if(matchesArray[i] == "POSTPONED"){
           }
-          else if(matchesArray[i] === userUidPicks[i].matchPick){
+          else if(matchesArray[i] == uidPicks[i].matchPick){
             if(matches[i] === "Draw"){
               userPoints++;
             }
@@ -438,7 +375,7 @@ $(document).ready(function(){
         for(var i = 0; i < matchesArray.length; i++){;
           if(matchesArray[i] == "POSTPONED"){
           }
-          if(matchesArray[i] == userUidPicks[i].matchPick){
+          if(matchesArray[i] == uidPicks[i].matchPick){
             if(matches[i] == "Draw"){
               pointCounter++;
             }
@@ -494,7 +431,7 @@ $(document).ready(function(){
 //Takes pick options and uploads attaches them to the username.
   $(document).on("click", "#submitPicks", function(){
     event.preventDefault();
-      userPicks.submitPick(firebaseFixtures);
+      userChoice.submitPick(firebaseFixtures);
   });
 
 
