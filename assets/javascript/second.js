@@ -1,5 +1,6 @@
 $(document).ready(function(){
   var currentMatchDay;
+  var weekStarted;
   //tableGen object contains all the functions used to generate the league standings table
     var tableGen = {
       teamRow: "",
@@ -64,7 +65,20 @@ var fixtureGen = {
   addMatch: function(arrayInput, data){
     matchRow = $("<tr>");
     newFixture = $("<td>");
-    newFixture.html("<span data-game="+ data +"-H>"+ arrayInput.homeTeamName +"</span> vs <span data-game="+ data +"-A>" + arrayInput.awayTeamName + "</span>");
+
+    matchResults.matchCheck(arrayInput);
+    if(weekStarted){
+      if(arrayInput.status == "FINISHED"){
+        newFixture.html("<span>FT: "+arrayInput.homeTeamName + " <b>" + arrayInput.result.goalsHomeTeam + "</b> VS "+ arrayInput.awayTeamName + "  <b>" + arrayInput.result.goalsAwayTeam + "</b></span>");
+      }else{
+        newFixture.html("<span data-game="+ data +"-H>"+ arrayInput.homeTeamName +"</span> vs <span data-game="+ data +"-A>" + arrayInput.awayTeamName + "</span>");
+      };
+    }else{
+      newFixture.html("<span data-game="+ data +"-H>"+ arrayInput.homeTeamName +"</span> vs <span data-game="+ data +"-A>" + arrayInput.awayTeamName + "</span>");
+    };
+
+    //if fails this works
+    //newFixture.html("<span data-game="+ data +"-H>"+ arrayInput.homeTeamName +"</span> vs <span data-game="+ data +"-A>" + arrayInput.awayTeamName + "</span>");
 
     matchRow.append(newFixture);
     $("#fixtures").append(matchRow);
@@ -72,6 +86,44 @@ var fixtureGen = {
   }
 }
 
+var matchResults = {
+  printResults: function (matchArray){
+
+    //generates the radiobuttons allowing for user picks
+      $("#resultsHead").html("<h3>Results for matchday: " + matchArray[0].matchday + "</h3>");
+      for(var i = 0; i <matchArray.length; i++){
+          matchResults.addResult(matchArray[i], i);
+      }
+  },
+  addResult: function(arrayInput, data){
+    resultRow = $("<tr>");
+    var newResult = $("<td>");
+    if(arrayInput.status == "POSTPONED"){
+      newResult.html("<span>PPD: " + arrayInput.homeTeamName + " VS "+ arrayInput.awayTeamName + "</span>");
+      resultRow.append(newResult);
+      $("#results").append(resultRow);
+    }
+    else if(arrayInput.status === "FINISHED"){
+      newResult.html("<span>FT: "+arrayInput.homeTeamName + " <b>" + arrayInput.result.goalsHomeTeam + "</b> VS "+ arrayInput.awayTeamName + "  <b>" + arrayInput.result.goalsAwayTeam + "</b></span>");
+      resultRow.append(newResult);
+      $("#results").append(resultRow);
+    }
+    else{
+      newResult.html("<span>TBP: "+ arrayInput.homeTeamName + " VS "+ arrayInput.awayTeamName + "</span>");
+      resultRow.append(newResult);
+      $("#results").append(resultRow);
+    }
+  },
+  matchCheck: function(matchArray){
+    weekStarted = false;
+    for(var i = 0; i <matchArray.length; i++){
+      if(matchArray[i].status === "FINISHED"){
+        weekStarted = true;
+      }
+    }
+    return weekStarted;
+  }
+}
 
 
   $.ajax({
@@ -81,6 +133,7 @@ var fixtureGen = {
     type: 'GET',
   }).done(function(response) {
     currentMatchDay = response.matchday;
+    var previousMatchDay = currentMatchDay -1;
       tableGen.createStandings(response);
 
       $.ajax({
@@ -92,6 +145,16 @@ var fixtureGen = {
         console.log(response);
         fixtureGen.printMatches(response.fixtures);
       });
+
+      $.ajax({
+        headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
+        url: 'http://api.football-data.org/v1/competitions/426/fixtures?matchday=' + previousMatchDay,
+        dataType: 'json',
+        type: 'GET',
+      }).done(function(response) {
+        matchResults.printResults(response.fixtures);
+      });
+
     });
 
 });
