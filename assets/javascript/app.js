@@ -1,6 +1,10 @@
+//These global variables saves the list of matches so we can pull that data into a table later
+//and takes the user's submitted picks and saves it to possibly push to firebase
+//It also works in place of the data pulled from the user's account to build
+//the web application while constructing user authentication.
 var matches = [];
-
-var game0;
+var submittedPicks = [];
+var pointCounter = 0;
 
 $(document).ready(function(){
 
@@ -32,8 +36,9 @@ $(document).ready(function(){
     //2/2 functions that print fixtures
     addMatch: function(arrayInput, data){
       matchRow = $("<tr>");
-      var newFixture = $("<td>");
+      newFixture = $("<td>");
       newFixture.html("<span data-game="+ data +"-H>"+ arrayInput.homeTeamName +"</span> vs <span data-game="+ data +"-A>" + arrayInput.awayTeamName + "</span>");
+      
       matchRow.append(newFixture);
       $("#fixtures").append(matchRow);
       return;
@@ -84,7 +89,6 @@ $(document).ready(function(){
   }
 
   var userPicks = {
-
     printPicks: function(matchArray){
       //takes matchDay from the JSOn object and prints it into header
       $("#matchdaypicks").html("Matchday: " + matchArray[0].matchday);
@@ -100,10 +104,19 @@ $(document).ready(function(){
     addPick: function(arrayInput, data){
       pickRow = $("<tr>");
       var newPick = $("<td>");
-      newPick.html("<span>"+ arrayInput.homeTeamName + " <input type='radio' name='radioRow" + data +"' value='home"+data+"'>  " + "</span>" + "<span>" + arrayInput.awayTeamName + " <input type='radio' name='radioRow" + data +"' value='away"+data+"'>  " + "</span>" + "<span>" + "Draw" + " <input type='radio' name='radioRow" + data + "' value='draw"+data+"'></span>");
+      newPick.html("<span>"+ arrayInput.homeTeamName + " <input type='radio' name='radioRow" + data +"' value='" + arrayInput.homeTeamName + "'>  " + "</span>" + "<span>" + arrayInput.awayTeamName + " <input type='radio' name='radioRow" + data +"' value='" + arrayInput.awayTeamName + "'>  " + "</span>" + "<span>" + "Draw" + " <input type='radio' name='radioRow" + data + "' value='Draw'></span>");
       pickRow.append(newPick);
       $("#userpick").append(pickRow);
       return;
+    },
+
+    submitPick: function(matchArray){
+      for(var i = 0; i < matchArray.length; i++){
+        $.each($("input[name='radioRow" + i + "']:checked"), function(){
+          submittedPicks.push($(this).val());
+          console.log($(this).val());
+        });
+      }
     }
   }
 
@@ -133,8 +146,47 @@ $(document).ready(function(){
 
   }
 
+  var userResults = {
+    //This compares the user's choices with that the actual results
+    compare: function(){
+        for(var i = 0; i < matches.length; i++){
+          if(matches[i] == "POSTPONED"){
+            console.log("Postponed, no points yet!");
+          }
+          if(matches[i] == submittedPicks[i]){
+            if(matches[i] == "Draw"){
+              console.log("A draw, one point for you!");
+              pointCounter++;
+            }
+            else{
+              console.log("You got it!  Three points!");
+              pointCounter += 3;
+            }
+          }
+        }
+      userResults.printPoints();
+    },
+    //This prints the points to HTML
+    printPoints: function(){
+      pointRow = $("<tr>");
+      var newPoints = $("<td>");
+      newPoints.html("<span><H3>" + pointCounter + "</H3></span>");
+      pointRow.append(newPoints);
+      $("#userpoints").append(pointRow);
+    }
+  }
 
-    //API call to obtain fixtures for a specified match day 
+//Takes pick options and uploads attaches them to the username.
+  $("#submitPicks").on("click", function(){
+      submittedPicks = [];
+      userPicks.submitPick(matches);
+      userResults.compare();
+      userResults.printPoints();  
+  });
+
+
+
+    //API call to obtain fixtures for a specified match day
     //This actually calls object and object runs functions
   $.ajax({
     headers: { 'X-Auth-Token': '183f8b1674a443d3b81e71fa06e8ac24' },
@@ -159,6 +211,26 @@ $(document).ready(function(){
     console.log(response);
     tableGen.createStandings(response);
   });
+
+  //API for Wikipedia
+
+
+
+          var queryURL = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&titles=Manchester+City&exintro=1&callback=?";
+
+
+          $.ajax({
+                  url: queryURL,
+                  method: "GETjson"
+                })
+            
+
+          .done(function(response) {
+              console.log(queryURL);
+
+              console.log(response);
+          });
+
 
 
 function gamesFinished (fixtures){
@@ -185,22 +257,6 @@ function gamesFinished (fixtures){
       console.log(matches);
   }
 }
-
-$(document).on("click", "home0", function() {
-  if("home0" === matches[0]) {
-    game0 = "win";
-  }
-  if("away0" === matches[0]) {
-    game0 = "win";
-  }
-  if("draw0" === matches[0]) {
-    game0 = "draw";
-  }
-  console.log(game0);
-})
-
-
-
 /*Competition # and corresponding league
   2016/2017 season
   426: Premier League

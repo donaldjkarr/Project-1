@@ -152,5 +152,7 @@ var tableGen ={
     $("#signInArea").empty();
   });
 
+  $('.carousel').carousel()
+
 
 });
